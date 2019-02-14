@@ -1,6 +1,7 @@
 .TopMenu {
   display: flex;
   justify-content: space-between;
+  background-color: rgb(49, 70, 82);
 }
 
 .TopMenu p,

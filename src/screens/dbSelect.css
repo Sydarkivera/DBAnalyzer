@@ -83,3 +83,10 @@ input[type="text"]:not(:focus):valid ~ .floating-label {
   margin: 0;
   padding: 0;
 }
+
+.center-flex {
+  align-self: center;
+  justify-content: center;
+  text-align: center;
+  display: block;
+}

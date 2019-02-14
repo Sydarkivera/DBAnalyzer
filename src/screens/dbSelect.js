@@ -193,11 +193,13 @@ class DBSelectScreen extends Component {
     return (
       <div className="App">
         {/* <header className="App-header"> */}
-        <p>Db select</p>
-        <div className="new-connection-area">
+        <div className="TopMenu">
+          <p className="center-flex">Db select</p>
           <p onClick={() => (this.showAddForm = !this.showAddForm)}>
             New connection
           </p>
+        </div>
+        <div className="new-connection-area">
           {this.renderNewConnectionForm()}
         </div>
         <div>{this.renderConnections()}</div>
