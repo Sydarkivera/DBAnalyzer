@@ -6,10 +6,27 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { BrowserRouter } from "react-router-dom";
 import { ConnectionList } from "./store/connections";
+import { Selected } from "./store/selected";
+
+// import { observable } from 'mobx'
+// import { create } from "mobx-persist";
+
+// const hydrate = create({
+//   // storage: localSorage, // or AsyncStorage in react-native.
+//   // default: localStorage
+//   jsonify: true // if you use AsyncStorage, here shoud be true
+//   // default: true
+// });
+
+const connectionStore = new ConnectionList();
+const selectedStore = new Selected(connectionStore);
 
 const stores = {
-  connectionStore: new ConnectionList()
+  connectionStore,
+  selectedStore
 };
+
+// hydrate("selectedStore", stores.selectedStore).then(() => {});
 
 ReactDOM.render(
   <BrowserRouter>

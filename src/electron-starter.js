@@ -1,13 +1,15 @@
 const electron = require("electron");
+
+// require("electron-reload")(__dirname);
 // Module to control application life.
 const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
 
-const path = require("path");
-const url = require("url");
+// const path = require("path");
+// const url = require("url");
 
-const mssql = require("mssql");
+// const mssql = require("mssql");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.

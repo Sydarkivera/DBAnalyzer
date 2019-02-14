@@ -1,0 +1,20 @@
+.preview-table {
+  overflow: scroll;
+}
+
+.preview-table-row {
+  /* display: flex; */
+  /* margin: 0; */
+  /* padding: 0; */
+}
+
+.preview-table-item {
+  max-width: 800px;
+  margin: 0;
+  padding: 0;
+  /* flex-shrink: 0; */
+  /* flex-grow: 1; */
+  border: 1px solid rgb(70, 81, 108);
+  /* padding: 3px; */
+  font-size: 0.8em;
+}

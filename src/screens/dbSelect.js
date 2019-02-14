@@ -7,7 +7,7 @@ import "./dbSelect.css";
 const mssql = window.require("mssql");
 // const sql = window.require("mssql");
 
-@inject("connectionStore")
+@inject("connectionStore", "selectedStore")
 @observer
 class DBSelectScreen extends Component {
   @observable showAddForm = false;
@@ -17,40 +17,63 @@ class DBSelectScreen extends Component {
   @observable username = "";
   @observable password = "";
 
+  @observable formConnectionStatus = "";
+
   testFormConnection = async () => {
     console.log(this.serverName);
     console.log(this.database);
     console.log(this.username);
     console.log(this.password);
-    const res = await mssql.connect(
+    this.formConnectionStatus = "";
+    await mssql.connect(
       {
         server: this.serverName,
         database: this.database,
         user: this.username,
         password: this.password
+      },
+      err => {
+        // var cons = this.props.connectionStore.connections;
+        // con["loading"] = false;
+        if (err) {
+          this.formConnectionStatus = err["name"];
+        } else {
+          this.formConnectionStatus = "Success";
+        }
+        // console.log(err);
+        // this.setState({ connections: cons });
       }
-      // err => {
-      //   // var cons = this.props.connectionStore.connections;
-      //   con["loading"] = false;
-      //   if (err) {
-      //     con["connectionStatus"] = err["name"];
-      //   } else {
-      //     con["connectionStatus"] = "Success";
-      //   }
-      //   console.log(err);
-      //   // this.setState({ connections: cons });
-      // }
     );
-    console.log(res);
+    // console.log(res);
+  };
+
+  createFormConnection = event => {
+    var conn = this.props.connectionStore.createConnection();
+    conn.server = this.serverName;
+    conn.database = this.database;
+    conn.username = this.username;
+    conn.password = this.password;
+    event.preventDefault();
   };
 
   async testConnection(item, index) {
     var con = this.props.connectionStore.connections[index];
+    // console.log(item);
     con["loading"] = true;
     con["connectionStatus"] = "";
     // this.setState({ connections: cons });
+
+    // let config = {
+    //   port: con.port,
+    //   password: con.password,
+    //   user: con.username,
+    //   server: con.server,
+    //   database: con.database,
+    //   connectionTimeout: con.connectionTimeout
+    // };
+    console.log(con.databaseConfig);
     await mssql.connect(
-      item,
+      con.databaseConfig,
       err => {
         // var cons = this.props.connectionStore.connections;
         con["loading"] = false;
@@ -65,13 +88,23 @@ class DBSelectScreen extends Component {
     );
   }
 
+  removeConnection(connection) {
+    connection.delete();
+  }
+
+  selectConnection(connection) {
+    this.props.selectedStore.connection = connection;
+    //navigate to selected database
+    this.props.history.push("/database/");
+  }
+
   renderNewConnectionForm() {
     if (!this.showAddForm) {
       return null;
     }
 
     return (
-      <form>
+      <form onSubmit={this.createFormConnection}>
         <div className="input-group">
           <input
             type="text"
@@ -114,6 +147,7 @@ class DBSelectScreen extends Component {
         </div>
         <input type="button" value="Test" onClick={this.testFormConnection} />
         <input type="submit" value="submit" />
+        <p>{this.formConnectionStatus}</p>
       </form>
     );
   }
@@ -121,8 +155,13 @@ class DBSelectScreen extends Component {
   renderConnections() {
     return this.props.connectionStore.connections.map((item, index) => {
       return (
-        <div className="connection-card" key={item.database}>
-          <p className="card-title">
+        <div className="connection-card" key={item.id}>
+          <p
+            onClick={() => {
+              this.selectConnection(item);
+            }}
+            className="card-title"
+          >
             {item.server}:{item.database}
           </p>
           <div className="card-content">
@@ -137,7 +176,12 @@ class DBSelectScreen extends Component {
               >
                 Test
               </p>
-              <p className="button button-danger">Remove</p>
+              <p
+                className="button button-danger"
+                onClick={() => this.removeConnection(item)}
+              >
+                Remove
+              </p>
             </div>
           </div>
         </div>

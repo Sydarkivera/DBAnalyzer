@@ -4,6 +4,7 @@ import "./App.css";
 
 import DBSelectScreen from "./screens/dbSelect";
 import Database from "./screens/database";
+import TablePreview from "./screens/tablePreview";
 
 class App extends Component {
   render() {
@@ -11,7 +12,8 @@ class App extends Component {
       <div className="App">
         <Switch>
           <Route exact path="/" component={DBSelectScreen} />
-          <Route path="/database/" component={Database} />
+          <Route exact path="/database/" component={Database} />
+          <Route path="/database/table/" component={TablePreview} />
         </Switch>
       </div>
     );

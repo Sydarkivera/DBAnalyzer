@@ -1704,7 +1704,7 @@ chokidar@^1.6.0:
   optionalDependencies:
     fsevents "^1.0.0"
 
-chokidar@^2.0.2:
+chokidar@^2.0.2, chokidar@^2.0.4:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-2.1.1.tgz#adc39ad55a2adf26548bd2afa048f611091f9184"
   dependencies:
@@ -1938,6 +1938,16 @@ concat-stream@1.6.2, concat-stream@^1.6.0:
     inherits "^2.0.3"
     readable-stream "^2.2.2"
     typedarray "^0.0.6"
+
+conf@^2.0.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/conf/-/conf-2.2.0.tgz#ee282efafc1450b61e205372041ad7d866802d9a"
+  dependencies:
+    dot-prop "^4.1.0"
+    env-paths "^1.0.0"
+    make-dir "^1.0.0"
+    pkg-up "^2.0.0"
+    write-file-atomic "^2.3.0"
 
 configstore@^3.0.0:
   version "3.1.2"
@@ -2603,6 +2613,18 @@ electron-download@^4.1.0:
     rc "^1.2.1"
     semver "^5.4.1"
     sumchecker "^2.0.2"
+
+electron-reload@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/electron-reload/-/electron-reload-1.4.0.tgz#00154268c936fa17b496fdb1728434c747e1d29a"
+  dependencies:
+    chokidar "^2.0.4"
+
+electron-store@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/electron-store/-/electron-store-2.0.0.tgz#1035cca2a95409d1f54c7466606345852450d64a"
+  dependencies:
+    conf "^2.0.0"
 
 electron-to-chromium@^1.2.7, electron-to-chromium@^1.3.30:
   version "1.3.113"
@@ -5275,6 +5297,12 @@ mkdirp@0.5.1, mkdirp@0.5.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdi
   dependencies:
     minimist "0.0.8"
 
+mobx-persist@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/mobx-persist/-/mobx-persist-0.4.1.tgz#fe5790eda04e0ee0b91c512d1347104e09363f9a"
+  dependencies:
+    serializr "^1.1.11"
+
 mobx-react@^5.4.3:
   version "5.4.3"
   resolved "https://registry.yarnpkg.com/mobx-react/-/mobx-react-5.4.3.tgz#6709b7dd89670c40e9815914ac2ca49cc02bfb47"
@@ -6006,6 +6034,12 @@ pkg-dir@^1.0.0:
 pkg-dir@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/pkg-dir/-/pkg-dir-2.0.0.tgz#f6d5d1109e19d63edf428e0bd57e12777615334b"
+  dependencies:
+    find-up "^2.1.0"
+
+pkg-up@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/pkg-up/-/pkg-up-2.0.0.tgz#c819ac728059a461cab1c3889a2be3c49a004d7f"
   dependencies:
     find-up "^2.1.0"
 
@@ -7072,6 +7106,10 @@ send@0.16.2:
     on-finished "~2.3.0"
     range-parser "~1.2.0"
     statuses "~1.4.0"
+
+serializr@^1.1.11:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/serializr/-/serializr-1.4.1.tgz#e10265d5305552f9c3d3accf7d5c1ec88acb96c1"
 
 serve-index@^1.7.2:
   version "1.9.1"
@@ -8365,7 +8403,7 @@ wrappy@1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
 
-write-file-atomic@^2.0.0:
+write-file-atomic@^2.0.0, write-file-atomic@^2.3.0:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/write-file-atomic/-/write-file-atomic-2.4.2.tgz#a7181706dfba17855d221140a9c06e15fcdd87b9"
   dependencies:
