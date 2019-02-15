@@ -28,3 +28,7 @@ a {
   padding: 0;
   margin: 0;
 }
+
+.table-item-name {
+  display: flex;
+}

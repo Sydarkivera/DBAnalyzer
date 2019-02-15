@@ -13,7 +13,7 @@ export class DatabaseStructure {
   @observable tables = [];
   @observable loading = true;
 
-  connection = null;
+  connection: Connection = null;
   autoSave = true;
   // @observable connection: Connection = null;
   // @observable table = "";
@@ -131,11 +131,14 @@ export class Table {
   @observable tableName = "";
   @observable columns = [];
   @observable rowCount = 0;
+  @observable shouldSave = true;
 
   saveHandler = null;
   autoSave = true;
+  store: DatabaseStructure = null;
 
-  constructor(store, id = null) {
+  constructor(store: DatabaseStructure, id = null) {
+    this.store = store;
     if (id !== null) {
       //load saved data
       this.loadSavedData(id);
@@ -155,6 +158,27 @@ export class Table {
     );
   }
 
+  @action
+  async loadColumnData() {
+    await mssql.connect(this.connection.databaseConfig);
+    // create Request object
+    var request = new mssql.Request();
+    const result = await request.query(
+      "SELECT * FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='" +
+        this.tableName +
+        "'"
+    );
+    var data = [];
+    for (var index in result) {
+      // var tempStructure = []
+      data.push({
+        columnName: result[index]["COLUMN_NAME"],
+        dataType: result[index]["DATA_TYPE"]
+      });
+    }
+    this.columns = data;
+  }
+
   loadSavedData(id) {
     const data = fileStore.get("table_" + id);
     // console.log(data);
@@ -163,6 +187,7 @@ export class Table {
       this.tableName = data.tableName;
       this.columns = data.columns;
       this.rowCount = data.rowCount;
+      this.shouldSave = data.shouldSave;
       this.autoSave = true;
     }
   }
@@ -183,7 +208,8 @@ export class Table {
     return {
       tableName: this.tableName,
       columns: this.columns,
-      rowCount: this.rowCount
+      rowCount: this.rowCount,
+      shouldSave: this.shouldSave
     };
   }
 }

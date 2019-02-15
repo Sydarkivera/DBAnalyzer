@@ -5,6 +5,8 @@ import { observer, inject } from "mobx-react";
 import "../App.css";
 import style from "./database.css";
 
+import { FaRegCircle, FaRegCheckCircle } from "react-icons/fa";
+
 const mssql = window.require("mssql");
 // const sql = window.require("mssql");
 
@@ -27,63 +29,14 @@ class DatabaseScreen extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      loading: true,
-      numEmptyTables: 0,
-      tables: []
-    };
-
     props.selectedStore.connection.fetchDatabaseStrucutre();
-
-    // mssql.on("error", err => {
-    // ... error handler
-    // });
-    // console.log(style);
-    // setTimeout(() => this.getInitialData(), 1000);
   }
 
-  getInitialData = async () => {
-    try {
-      await mssql.connect(this.props.selectedStore.connection.databaseConfig);
-      // create Request object
-      var request = new mssql.Request();
-      const result = await request.query(
-        "SELECT SCHEMA_NAME(schema_id) AS [SchemaName],[Tables].name AS [TableName],SUM([Partitions].[rows]) AS [TotalRowCount]FROM sys.tables AS [Tables] JOIN sys.partitions AS [Partitions]ON [Tables].[object_id] = [Partitions].[object_id] AND [Partitions].index_id IN ( 0, 1 ) GROUP BY SCHEMA_NAME(schema_id), [Tables].name;"
-      );
-      console.log(result);
-      var emptyCount = 0;
-      var totalRows = 0;
-      for (var i in result) {
-        // console.log(result[i]);
-        let table = result[i];
-        if (table["TotalRowCount"] === "0") {
-          // console.log(table);
-          emptyCount += 1;
-        }
-        totalRows += parseInt(table["TotalRowCount"], 10);
-      }
-      this.tables = result;
-      this.numberOfEmptyTables = emptyCount;
-      this.totalRows = totalRows;
-      this.loading = false;
-      // this.setState({
-      //   loading: false,
-      //   tables: result,
-      //   numEmptyTables: emptyCount,
-      //   totalRows: totalRows
-      // });
-      // console.log("Number of empty tables: ", emptyCount);
-      // console.log("total rows: ", totalRows);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  selectTable(tableName) {
-    console.log("select table:", tableName);
-    this.props.selectedStore.table = tableName;
+  selectTable(table) {
+    // console.log("select table:", tableName);
+    this.props.selectedStore.table = table;
     this.props.history.push("/database/table/");
-    console.log("push history");
+    // console.log("push history");
   }
 
   render() {
@@ -128,13 +81,21 @@ class DatabaseScreen extends Component {
         let table = tablesSorted[i];
         // console.log(tables[i].TotalRowCount > 0);
         if (table.rowCount > 0) {
+          let checked = table.shouldSave ? (
+            <FaRegCheckCircle
+              onClick={() => (table.shouldSave = !table.shouldSave)}
+            />
+          ) : (
+            <FaRegCircle
+              onClick={() => (table.shouldSave = !table.shouldSave)}
+            />
+          );
           tableItems.push(
-            <div
-              key={i}
-              className="table-item"
-              onClick={() => this.selectTable(table.tableName)}
-            >
-              <p>{table.tableName}</p>
+            <div key={i} className="table-item">
+              <div className="table-item-name">
+                {checked}
+                <p onClick={() => this.selectTable(table)}>{table.tableName}</p>
+              </div>
               <p>rows: {table.rowCount}</p>
             </div>
           );

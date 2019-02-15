@@ -12,6 +12,7 @@
     "node-mssql": "^0.0.1",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
+    "react-icons": "^3.4.0",
     "react-router-dom": "^4.3.1",
     "react-router-native": "^4.3.0",
     "tedious": "^4.1.3",
