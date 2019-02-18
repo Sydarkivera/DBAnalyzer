@@ -69,7 +69,7 @@ export class Connection {
     } catch (e) {}
   };
 
-  async fetchDatabaseStrucutre(id) {
+  fetchDatabaseStrucutre(id) {
     // early exit if structure already exists
     if (this.databaseStructure) {
       return;

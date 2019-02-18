@@ -23,8 +23,17 @@ export class Selected {
           }
           return false;
         });
+        this.connection.fetchDatabaseStrucutre();
       }
-      this.table = data.table;
+      if (data.tableId) {
+        console.log(data.tableId);
+        this.table = this.connection.databaseStructure.tables.find(item => {
+          if (item.id === data.tableId) {
+            return true;
+          }
+          return false;
+        });
+      }
       this.autoSave = true;
     }
 
@@ -42,7 +51,7 @@ export class Selected {
   get asJson() {
     return {
       conId: this.connection ? this.connection.id : null,
-      table: this.table
+      tableId: this.table ? this.table.id : null
     };
   }
 

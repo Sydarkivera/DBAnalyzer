@@ -13,6 +13,12 @@ class TablePreviewScreen extends Component {
   @observable data = [];
   @observable structure = [];
 
+  @observable start = 0;
+  @observable interval = 30;
+  // @observable end = 30;
+
+  allowData = true;
+
   constructor() {
     super();
     setTimeout(() => this.getInitialData(), 1000);
@@ -20,13 +26,9 @@ class TablePreviewScreen extends Component {
 
   getInitialData = async () => {
     try {
-      await mssql.connect(this.props.selectedStore.connection.databaseConfig);
       // create Request object
-      var request = new mssql.Request();
-      const result = await request.query(
-        "SELECT TOP(10) * FROM " + this.props.selectedStore.table
-      );
-      console.log(result);
+
+      await this.props.selectedStore.table.loadColumnData();
 
       // var request2 = new mssql.Request();
       // const result2 = await request2.query(
@@ -46,28 +48,43 @@ class TablePreviewScreen extends Component {
       //     dataType: result2[index]["DATA_TYPE"]
       //   });
       // }
+      if (this.allowData) {
+        await mssql.connect(this.props.selectedStore.connection.databaseConfig);
+        var request = new mssql.Request();
+        const result = await request.query(
+          "SELECT * FROM " +
+            this.props.selectedStore.table.tableName +
+            " ORDER BY " +
+            this.props.selectedStore.table.columns[0].columnName +
+            " OFFSET " +
+            this.start +
+            " ROWS FETCH NEXT " +
+            this.interval +
+            " ROWS ONLY;"
+        );
+        const structure = this.props.selectedStore.table.columns;
+        let stringTypes = ["int", "smallint", "char", "varchar", "text"];
+        for (var i in result) {
+          var row = result[i];
+          var tempData = [];
+          for (var index in structure) {
+            let type = structure[index].dataType;
+            if (stringTypes.includes(type)) {
+              tempData.push(row[structure[index].columnName]);
+            } else if (type === "datetime") {
+              var d = new Date(row[structure[index].columnName]);
 
-      const structure = this.props.selectedStore.table.columns;
-      let stringTypes = ["int", "smallint", "char", "varchar", "text"];
-      for (var i in result) {
-        var row = result[i];
-        var tempData = [];
-        for (var index in structure) {
-          let type = structure.dataType;
-          if (stringTypes.includes(type)) {
-            tempData.push(row[structure.columnName]);
-          } else if (type === "datetime") {
-            var d = new Date(row[structure.columnName]);
-
-            tempData.push(d.toDateString());
-          } else if (type === "bit") {
-            tempData.push("binary");
-          } else {
-            tempData.push("unknown type: " + type);
+              tempData.push(d.toDateString());
+            } else if (type === "bit") {
+              tempData.push("binary");
+            } else {
+              tempData.push("unknown type: " + type);
+            }
           }
+          data.push(tempData);
         }
-        data.push(tempData);
       }
+
       // console.log(data);
       this.data = data;
     } catch (err) {
@@ -75,9 +92,15 @@ class TablePreviewScreen extends Component {
     }
   };
 
+  displayNextRows = () => {
+    this.start += this.interval;
+    this.getInitialData();
+  };
+
   renderData() {
     const structure = this.props.selectedStore.table.columns;
-    if (this.data.length === 0) {
+    // console.log(structure);
+    if (!structure) {
       return null;
     }
 
@@ -91,26 +114,33 @@ class TablePreviewScreen extends Component {
         </th>
       );
     }
-    var data = [];
-    for (let index in this.data) {
-      var rowContent = [];
-      for (let i in this.data[index]) {
-        rowContent.push(
-          <td className="preview-table-item" key={i}>
-            {this.data[index][i]}
-          </td>
+    if (this.data.length > 0) {
+      var data = [];
+      for (let index in this.data) {
+        var rowContent = [];
+        for (let i in this.data[index]) {
+          rowContent.push(
+            <td className="preview-table-item" key={i}>
+              {this.data[index][i]}
+            </td>
+          );
+        }
+        data.push(
+          <tr key={index} className="preview-table-row">
+            {rowContent}
+          </tr>
         );
       }
-      data.push(
-        <tr key={index} className="preview-table-row">
-          {rowContent}
+    } else {
+      data = (
+        <tr className="preview-table-row">
+          <td className="preview-table-item" colSpan={headerItems.length}>
+            {this.allowData
+              ? "Loading data"
+              : "Permission denied for presentation"}
+          </td>
         </tr>
       );
-      // headerItems.push(
-      //   <p key={this.strucutre[index].columnName}>
-      //     {this.strucutre[index].columnName}
-      //   </p>
-      // );
     }
 
     return (
@@ -135,10 +165,18 @@ class TablePreviewScreen extends Component {
             {this.props.selectedStore.connection
               ? this.props.selectedStore.connection.server
               : ""}{" "}
-            : {this.props.selectedStore.table}
+            :{" "}
+            {this.props.selectedStore.table
+              ? this.props.selectedStore.table.tableName
+              : ""}
           </p>
         </div>
+        <p>
+          Displaying {this.start}-{this.start + this.interval} of{" "}
+          {this.props.selectedStore.table.rowCount}
+        </p>
         {this.renderData()}
+        <p onClick={this.displayNextRows}>Next rows</p>
       </div>
     );
   }

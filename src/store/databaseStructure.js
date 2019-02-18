@@ -147,6 +147,8 @@ export class Table {
       this.id = uuid.v4();
     }
 
+    // this.loadColumnData();
+
     this.saveHandler = reaction(
       () => this.asJson,
       json => {
@@ -160,7 +162,11 @@ export class Table {
 
   @action
   async loadColumnData() {
-    await mssql.connect(this.connection.databaseConfig);
+    // console.log(this.columns);
+    if (this.columns.length > 0) {
+      return;
+    }
+    await mssql.connect(this.store.connection.databaseConfig);
     // create Request object
     var request = new mssql.Request();
     const result = await request.query(
