@@ -17,7 +17,7 @@ class TablePreviewScreen extends Component {
   @observable interval = 30;
   // @observable end = 30;
 
-  allowData = true;
+  allowData = false;
 
   constructor() {
     super();
