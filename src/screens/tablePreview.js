@@ -98,6 +98,9 @@ class TablePreviewScreen extends Component {
   };
 
   renderData() {
+    if (!this.props.selectedStore.table) {
+      return null;
+    }
     const structure = this.props.selectedStore.table.columns;
     // console.log(structure);
     if (!structure) {
@@ -173,7 +176,9 @@ class TablePreviewScreen extends Component {
         </div>
         <p>
           Displaying {this.start}-{this.start + this.interval} of{" "}
-          {this.props.selectedStore.table.rowCount}
+          {this.props.selectedStore.table
+            ? this.props.selectedStore.table.rowCount
+            : ""}
         </p>
         {this.renderData()}
         <p onClick={this.displayNextRows}>Next rows</p>

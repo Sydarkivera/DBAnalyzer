@@ -174,6 +174,14 @@ export class Table {
         this.tableName +
         "'"
     );
+    // console.log(result);
+    // var request2 = new mssql.Request();
+    // const result2 = await request2.query(
+    //   "SELECT * FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE where TABLE_NAME='" +
+    //     this.tableName +
+    //     "'"
+    // );
+    // console.log(result2);
     var data = [];
     for (var index in result) {
       // var tempStructure = []
