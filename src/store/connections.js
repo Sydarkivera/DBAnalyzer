@@ -1,12 +1,10 @@
-import { observable, reaction, computed, action } from "mobx";
+import { observable, reaction, computed } from "mobx";
 import uuid from "uuid";
 
 import { DatabaseStructure } from "./databaseStructure";
 
 const FileStore = window.require("electron-store");
 const fileStore = new FileStore();
-
-const mssql = window.require("mssql");
 
 export class Connection {
   id = uuid.v4();
@@ -26,7 +24,7 @@ export class Connection {
 
   constructor(store, id = null) {
     this.store = store;
-    console.log(id);
+    // console.log(id);
     if (id) {
       //load saved data
       this.loadSavedData(id);
@@ -160,7 +158,7 @@ export class ConnectionList {
   }
 
   saveData = async connections => {
-    console.log(connections);
+    // console.log(connections);
     try {
       await fileStore.set("ConnectionStore", connections);
     } catch (e) {

@@ -1,6 +1,7 @@
-import { observable, reaction, computed, action, runInAction } from "mobx";
+import { observable, reaction, computed, action } from "mobx";
 import uuid from "uuid";
 import { Connection } from "./connections";
+import { selectN } from "../functions/permutations";
 
 const FileStore = window.require("electron-store");
 const fileStore = new FileStore();
@@ -130,6 +131,7 @@ export class Table {
   id = null;
   @observable tableName = "";
   @observable columns = [];
+  @observable candidateKeys = [];
   @observable rowCount = 0;
   @observable shouldSave = true;
 
@@ -163,9 +165,9 @@ export class Table {
   @action
   async loadColumnData() {
     // console.log(this.columns);
-    if (this.columns.length > 0) {
-      return;
-    }
+    // if (this.columns.length > 0) {
+    //   return;
+    // }
     await mssql.connect(this.store.connection.databaseConfig);
     // create Request object
     var request = new mssql.Request();
@@ -174,7 +176,7 @@ export class Table {
         this.tableName +
         "'"
     );
-    // console.log(result);
+    console.log(result);
     // var request2 = new mssql.Request();
     // const result2 = await request2.query(
     //   "SELECT * FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE where TABLE_NAME='" +
@@ -182,15 +184,250 @@ export class Table {
     //     "'"
     // );
     // console.log(result2);
+    // var request3 = new mssql.Request();
+    // const result3 = await request3.query(
+    //   "SELECT OBJECT_NAME(f.object_id) as ForeignKetConstraintName, OBJECT_NAME(f.parent_object_id) TableName, COL_NAME(fk.parent_object_id,fk.parent_column_id) ColumnName, OBJECT_NAME(fk.referenced_object_id) as ReferencedTableName, COL_NAME(fk.referenced_object_id, fk.referenced_column_id) as ReferencedColumnName\n\n FROM sys.foreign_keys AS f\nINNER JOIN sys.foreign_key_columns AS fk\n ON f.OBJECT_ID = fk.constraint_object_id\n INNER JOIN sys.tables t\n ON fk.referenced_object_id = t.object_id\n WHERE OBJECT_NAME(fk.referenced_object_id) = '" +
+    //     this.tableName +
+    //     "' or OBJECT_NAME(f.object_id) = '" +
+    //     this.tableName +
+    //     "'"
+    // );
+    // console.log(result3);
+
+    var request4 = new mssql.Request();
+    const result4 = await request4.query(
+      "SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE ccu ON tc.CONSTRAINT_NAME = ccu.Constraint_name WHERE tc.CONSTRAINT_TYPE = 'Primary Key' and tc.TABLE_NAME='" +
+        this.tableName +
+        "'"
+    );
+    let primaryKeys = [];
+    for (let index in result4) {
+      primaryKeys.push(result4[index]["COLUMN_NAME"]);
+    }
+    // console.log(result4);
+    // var request5 = new mssql.Request();
+    // const result5 = await request5.query(
+    //   "SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE ccu ON tc.CONSTRAINT_NAME = ccu.Constraint_name WHERE tc.CONSTRAINT_TYPE = 'Foreign Key' and tc.TABLE_NAME='" +
+    //     this.tableName +
+    //     "'"
+    // );
+    // console.log(result5);
+
+    let foreign_keys = await this.executeSQLQuery(
+      "SELECT f.name AS foreign_key_name, OBJECT_NAME(f.parent_object_id) AS table_name, OBJECT_NAME (f.referenced_object_id) AS referenced_object, COL_NAME(fc.parent_object_id, fc.parent_column_id) AS constraint_column_name, COL_NAME(fc.referenced_object_id, fc.referenced_column_id) AS referenced_column_name FROM sys.foreign_keys as f INNER JOIN sys.foreign_key_columns AS fc ON f.object_id = fc.constraint_object_id WHERE f.parent_object_id = OBJECT_ID('" +
+        this.tableName +
+        "')"
+    );
+    // console.log(foreign_keys);
+
     var data = [];
     for (var index in result) {
-      // var tempStructure = []
-      data.push({
+      let tempStructure = {
         columnName: result[index]["COLUMN_NAME"],
-        dataType: result[index]["DATA_TYPE"]
-      });
+        dataType: result[index]["DATA_TYPE"],
+        primaryKey: false,
+        foreign_keys: []
+      };
+      if (primaryKeys.includes(tempStructure.columnName)) {
+        tempStructure.primaryKey = true;
+      }
+
+      // check if the column is a foreign key
+      for (let index in foreign_keys) {
+        if (
+          foreign_keys[index]["constraint_column_name"] ===
+          tempStructure.columnName
+        ) {
+          tempStructure.foreign_keys.push({
+            referenceTable: foreign_keys[index]["referenced_object"],
+            referenceColumn: foreign_keys[index]["referenced_column_name"]
+          });
+        }
+      }
+      data.push(tempStructure);
     }
+    console.log(data);
     this.columns = data;
+  }
+
+  async findCandidateKeys() {
+    var r;
+    var possibleColumns = [];
+    let columns = this.columns;
+    var index;
+    if (!this.candidateKeys) {
+      this.candidateKeys = [];
+    }
+    for (index in columns) {
+      let column = columns[index];
+      // console.log(this.props.selectedStore.table.tableName);
+      // console.log(column.columnName);
+      r = await this.executeSQLQuery(
+        "SELECT TOP(1) 'There is at least one non-NULL' AS note FROM \"" +
+          this.tableName +
+          '" WHERE "' +
+          column.columnName +
+          '" is NULL'
+      );
+      // console.log(r);
+      if (r.length === 0 && column.dataType !== "text") {
+        possibleColumns.push(column);
+      }
+    }
+    // console.log(possibleColumns);
+    console.log(
+      possibleColumns.map(item => {
+        return item.columnName;
+      })
+    );
+
+    let tcRes = await this.executeSQLQuery(
+      "SELECT COUNT(*) as count FROM [" + this.tableName + "]"
+    );
+    // console.log(tcRes);
+    var tableCount = tcRes[0]["count"];
+    console.log(tableCount);
+
+    // Test all possible combinations:
+    // await this.testCombinations(possibleColumns, tableCount, 1);
+    // console.log("all combinations tested");
+    // console.log(this.candidateKeys);
+    await this.testCombinationsAlternative(possibleColumns, tableCount);
+    // console.log("all combinations tested");
+  }
+
+  async testCombinationsAlternative(array, tableCount) {
+    // start with all, then remove one at a time until it is no longer distinct.
+    let res = await this.testIfAnyCombinationIsPossible(array, tableCount);
+    // console.log("res:", res);
+    if (!res) {
+      // If still possible candidate, remove the item.
+      // current.splice(index, 1);
+      console.log("no candidate keys exists");
+      return;
+    }
+    let current = [...array];
+    for (var index = 0; index < current.length; index++) {
+      let temp = [...current];
+      // latest = current[index];
+      temp.splice(index, 1);
+      // test again.
+      res = await this.testIfAnyCombinationIsPossible(temp, tableCount);
+      if (res) {
+        // console.log("still possible");
+        // If still possible candidate, remove the item.
+        current.splice(index, 1);
+        index -= 1;
+      }
+    }
+    if (current.length > 0) {
+      this.candidateKeys.push([...current]);
+      console.log(
+        "candidate:",
+        current.map(item => {
+          return item.columnName;
+        })
+      );
+      // candidate key found
+      // remove these items and try again withouth them.
+      let newArray = [...array];
+      for (let i = 0; i < current.length; i++) {
+        newArray = newArray.filter(item => {
+          return item.columnName !== current[i].columnName;
+        });
+        // index = newArray.indexOf(current[i]);
+        // if (index >= 0) {
+        //   newArray.splice(i, 1);
+        // }
+      }
+      // console.log(
+      //   "rest:",
+      //   newArray.map(item => {
+      //     return item.columnName;
+      //   })
+      // );
+      await this.testCombinationsAlternative(newArray, tableCount);
+    }
+  }
+
+  async testCombinations(array, tableCount, n) {
+    // console.log(array, tableCount, n);
+    let singles = selectN(n, array);
+    for (var i = 0; i < singles.length; i++) {
+      var columns = '"';
+      for (var j = 0; j < singles[i].length - 1; j++) {
+        columns += singles[i][j].columnName + '", "';
+      }
+      columns += singles[i][singles[i].length - 1].columnName + '"';
+      // console.log(columns);
+      let r = await this.executeSQLQuery(
+        "SELECT Count(*) as count FROM ( SELECT DISTINCT " +
+          columns +
+          " FROM " +
+          this.tableName +
+          ") as derived"
+      );
+      // console.log("count:", r[0]["count"]);
+      if (r[0]["count"] === tableCount) {
+        console.log("found candidate key!", columns);
+        for (var k = 0; k < singles[i].length; k++) {
+          array.splice(array.indexOf(singles[i][k]), 1);
+        }
+        this.candidateKeys.push([...singles[i]]);
+        // restart this level with new array.
+        let possible = await this.testIfAnyCombinationIsPossible(
+          array,
+          tableCount
+        );
+        if (possible) {
+          await this.testCombinations(array, tableCount, n);
+        }
+        return;
+      }
+    }
+    if (n < array.length) {
+      await this.testCombinations(array, tableCount, n + 1);
+    }
+  }
+
+  async testIfAnyCombinationIsPossible(array, tableCount) {
+    if (array.length <= 0) {
+      return false;
+    }
+    var columns = '"';
+    for (var j = 0; j < array.length - 1; j++) {
+      columns += array[j].columnName + '", "';
+    }
+    columns += array[array.length - 1].columnName + '"';
+    // console.log(columns);
+    let r = await this.executeSQLQuery(
+      "SELECT Count(*) as count FROM ( SELECT DISTINCT " +
+        columns +
+        " FROM [" +
+        this.tableName +
+        "]) as derived"
+    );
+    if (r[0]["count"] === tableCount) {
+      return true;
+    }
+    // console.log("false");
+    return false;
+  }
+
+  async executeSQLQuery(query, depth = 0) {
+    try {
+      await mssql.connect(this.store.connection.databaseConfig);
+      // create Request object
+      var request = new mssql.Request();
+      const result = await request.query(query);
+      return result;
+    } catch (e) {
+      console.log(query);
+      console.log(e);
+      if (e.name === "ConnectionError" && depth < 0) {
+        return await this.executeSQLQuery(query, depth + 1);
+      }
+    }
   }
 
   loadSavedData(id) {
@@ -203,6 +440,7 @@ export class Table {
       this.rowCount = data.rowCount;
       this.shouldSave = data.shouldSave;
       this.autoSave = true;
+      this.candidateKeys = data.candidateKeys;
     }
   }
 
@@ -223,7 +461,8 @@ export class Table {
       tableName: this.tableName,
       columns: this.columns,
       rowCount: this.rowCount,
-      shouldSave: this.shouldSave
+      shouldSave: this.shouldSave,
+      candidateKeys: this.candidateKeys
     };
   }
 }

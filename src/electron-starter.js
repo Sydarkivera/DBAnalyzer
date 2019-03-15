@@ -16,6 +16,8 @@ const BrowserWindow = electron.BrowserWindow;
 let mainWindow;
 
 function createWindow() {
+  process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
+
   // Create the browser window.
   mainWindow = new BrowserWindow({ width: 800, height: 600 });
 

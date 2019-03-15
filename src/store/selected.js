@@ -16,7 +16,7 @@ export class Selected {
     if (data) {
       this.autoSave = false;
       if (data.conId) {
-        console.log(data.conId);
+        // console.log(data.conId);
         this.connection = connectionStore.connections.find(item => {
           if (item.id === data.conId) {
             return true;
@@ -26,7 +26,7 @@ export class Selected {
         this.connection.fetchDatabaseStrucutre();
       }
       if (data.tableId) {
-        console.log(data.tableId);
+        // console.log(data.tableId);
         this.table = this.connection.databaseStructure.tables.find(item => {
           if (item.id === data.tableId) {
             return true;

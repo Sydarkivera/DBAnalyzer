@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { observer, inject } from "mobx-react";
 import { observable } from "mobx";
 import "../App.css";
-import style from "./tablePreview.css";
+import "./tablePreview.css";
+import { selectN } from "../functions/permutations";
 
 const mssql = window.require("mssql");
 
@@ -17,7 +18,7 @@ class TablePreviewScreen extends Component {
   @observable interval = 30;
   // @observable end = 30;
 
-  allowData = false;
+  allowData = true;
 
   constructor() {
     super();
@@ -52,9 +53,9 @@ class TablePreviewScreen extends Component {
         await mssql.connect(this.props.selectedStore.connection.databaseConfig);
         var request = new mssql.Request();
         const result = await request.query(
-          "SELECT * FROM " +
+          'SELECT * FROM "' +
             this.props.selectedStore.table.tableName +
-            " ORDER BY " +
+            '" ORDER BY ' +
             this.props.selectedStore.table.columns[0].columnName +
             " OFFSET " +
             this.start +
@@ -63,7 +64,18 @@ class TablePreviewScreen extends Component {
             " ROWS ONLY;"
         );
         const structure = this.props.selectedStore.table.columns;
-        let stringTypes = ["int", "smallint", "char", "varchar", "text"];
+        let stringTypes = [
+          "int",
+          "smallint",
+          "char",
+          "varchar",
+          "text",
+          "numeric",
+          "tinyint",
+          "nvarchar",
+          "money",
+          "real"
+        ];
         for (var i in result) {
           var row = result[i];
           var tempData = [];
@@ -76,7 +88,15 @@ class TablePreviewScreen extends Component {
 
               tempData.push(d.toDateString());
             } else if (type === "bit") {
-              tempData.push("binary");
+              if (row[structure[index].columnName].length > 10) {
+                tempData.push("binary");
+              } else {
+                var s = "";
+                for (var si in row[structure[index].columnName]) {
+                  s += row[structure[index].columnName][si];
+                }
+                tempData.push(s);
+              }
             } else {
               tempData.push("unknown type: " + type);
             }
@@ -90,7 +110,21 @@ class TablePreviewScreen extends Component {
     } catch (err) {
       console.log(err);
     }
+    // await this.findCandidateKeys();
   };
+
+  async findCandidateKeys() {
+    console.log("starting candidate search");
+    await this.props.selectedStore.table.findCandidateKeys();
+    console.log("done");
+  }
+
+  async executeSQLQuery(query) {
+    // console.log(query);
+    await mssql.connect(this.props.selectedStore.connection.databaseConfig);
+    var request = await new mssql.Request();
+    return request.query(query);
+  }
 
   displayNextRows = () => {
     this.start += this.interval;
@@ -109,11 +143,25 @@ class TablePreviewScreen extends Component {
 
     var headerItems = [];
     for (let index in structure) {
+      let struct = structure[index];
+      let pk = null;
+      if (struct.primaryKey) {
+        pk = [<br />, "PK"];
+      }
+      let fk = null;
+      if (struct.foreign_keys.length > 0) {
+        fk = [<br />, struct.foreign_keys.length + " FK ", <br />];
+        for (let i in struct.foreign_keys) {
+          fk.push(struct.foreign_keys[i].referenceTable);
+        }
+      }
       headerItems.push(
-        <th className="preview-table-item" key={structure[index].columnName}>
-          {structure[index].columnName}
+        <th className="preview-table-item" key={struct.columnName}>
+          {struct.columnName}
           <br />
-          {structure[index].dataType}
+          {struct.dataType}
+          {pk}
+          {fk}
         </th>
       );
     }
@@ -175,11 +223,16 @@ class TablePreviewScreen extends Component {
           </p>
         </div>
         <p>
-          Displaying {this.start}-{this.start + this.interval} of{" "}
+          Displaying {this.start}-{Math.min(
+            this.start + this.interval,
+            this.props.selectedStore.table.rowCount
+          )}{" "}
+          of{" "}
           {this.props.selectedStore.table
             ? this.props.selectedStore.table.rowCount
             : ""}
         </p>
+        <p onClick={() => this.findCandidateKeys()}>Find candidate keys</p>
         {this.renderData()}
         <p onClick={this.displayNextRows}>Next rows</p>
       </div>
