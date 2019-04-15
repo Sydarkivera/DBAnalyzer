@@ -1,7 +1,11 @@
 import { observable, reaction, computed, action } from "mobx";
 import uuid from "uuid";
 import { Connection } from "./connections";
-import { selectN } from "../functions/permutations";
+import {
+  selectN,
+  permutations,
+  removeDoubles
+} from "../functions/permutations";
 
 const FileStore = window.require("electron-store");
 const fileStore = new FileStore();
@@ -13,6 +17,10 @@ export class DatabaseStructure {
   // @observable totalNumberOfRows = 0;
   @observable tables = [];
   @observable loading = true;
+  @observable saveDataLoaded = false;
+
+  @observable completedStep = 0;
+  @observable validateRemove = [];
 
   connection: Connection = null;
   autoSave = true;
@@ -23,9 +31,8 @@ export class DatabaseStructure {
   //
   constructor(connection) {
     this.connection = connection;
-    if (!this.loadSavedData()) {
-      this.fetchAllTables();
-    }
+
+    // this.pool = new mssql.ConnectionPool(connection.databaseConfig).connect();
     // if (id) {
     // load structure from file
     // } else {
@@ -41,28 +48,68 @@ export class DatabaseStructure {
         }
       }
     );
+    this.saveHandler2 = reaction(
+      () => this.asJson,
+      json => {
+        if (this.autoSave) {
+          this.saveData2(json);
+        }
+      }
+    );
   }
 
-  @action
-  loadSavedData = () => {
-    try {
-      const data = fileStore.get("database_" + this.connection.id, null);
-      // console.log(data);
-      if (data !== null) {
-        this.autoSave = false;
-        for (let index in data) {
-          this.tables.push(new Table(this, data[index]));
+  getTable(tableId) {
+    if (this.tables.length === 0) {
+      let table = new Table(this, tableId);
+      console.log(tableId);
+      // this.tables.push(table);
+      console.log(table);
+      return table;
+    } else {
+      this.table = this.connection.databaseStructure.tables.find(item => {
+        if (item.id === tableId) {
+          return true;
         }
-        this.loading = false;
-        this.autoSave = true;
-        return true;
-      } else {
         return false;
-      }
-    } catch (err) {
-      console.error(err);
+      });
     }
-  };
+  }
+
+  async loadSavedData() {
+    // return false;
+    return new Promise(resolve => {
+      setTimeout(() => {
+        try {
+          const data = fileStore.get("database_" + this.connection.id, null);
+          const data2 = fileStore.get(
+            "database_info_" + this.connection.id,
+            null
+          );
+          this.autoSave = false;
+          if (data2 !== null) {
+            this.completedStep = data2.completedStep;
+            this.validateRemove = data2.validateRemove;
+          }
+          if (data !== null) {
+            for (let index in data) {
+              this.tables.push(new Table(this, data[index]));
+            }
+            // return true;
+            resolve(true);
+            this.saveDataLoaded = true;
+          } else {
+            // return false;
+            resolve(false);
+          }
+          this.loading = false;
+          this.autoSave = true;
+        } catch (err) {
+          console.error(err);
+          resolve(false);
+        }
+      }, 100);
+    });
+  }
 
   saveData = async tables => {
     // fileStore.set("selected", data);
@@ -76,32 +123,60 @@ export class DatabaseStructure {
     }
   };
 
+  saveData2 = async data => {
+    // fileStore.set("selected", data);
+    console.log(data);
+    try {
+      await fileStore.set("database_info_" + this.connection.id, data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  @computed
+  get asJson() {
+    return {
+      completedStep: this.completedStep,
+      validateRemove: this.validateRemove
+    };
+  }
+
   @action
   async fetchAllTables() {
-    await mssql.connect(this.connection.databaseConfig);
-    // create Request object
-    var request = new mssql.Request();
-    const result = await request.query(
-      "SELECT SCHEMA_NAME(schema_id) AS [SchemaName],[Tables].name AS [TableName],SUM([Partitions].[rows]) AS [TotalRowCount]FROM sys.tables AS [Tables] JOIN sys.partitions AS [Partitions]ON [Tables].[object_id] = [Partitions].[object_id] AND [Partitions].index_id IN ( 0, 1 ) GROUP BY SCHEMA_NAME(schema_id), [Tables].name;"
-    );
-
-    this.autoSave = false;
-    // runInAction(() => {
-    let tables = [];
-    for (let index in result) {
-      let row = result[index];
-      let table = new Table(this);
-      table.tableName = row["TableName"];
-      table.rowCount = parseInt(row["TotalRowCount"], 10);
-      tables.push(table);
+    if (this.saveDataLoaded === true) {
+      return this.tables;
     }
-    this.tables = tables;
-    // });
-    this.autoSave = true;
-    this.saveData(this.tables).then(() => {
-      console.log("data saved");
-    });
-    this.loading = false;
+    let res = await this.loadSavedData();
+    console.log(res);
+    if (!res) {
+      await mssql.connect(this.connection.databaseConfig);
+      // create Request object
+      var request = new mssql.Request();
+      const result = await request.query(
+        "SELECT SCHEMA_NAME(schema_id) AS [SchemaName],[Tables].name AS [TableName],SUM([Partitions].[rows]) AS [TotalRowCount]FROM sys.tables AS [Tables] JOIN sys.partitions AS [Partitions]ON [Tables].[object_id] = [Partitions].[object_id] AND [Partitions].index_id IN ( 0, 1 ) GROUP BY SCHEMA_NAME(schema_id), [Tables].name;"
+      );
+      // console.log(result);
+
+      this.autoSave = false;
+      // runInAction(() => {
+      let tables = [];
+      for (let index in result) {
+        let row = result[index];
+        let table = new Table(this);
+        table.tableName = row["TableName"];
+        table.rowCount = parseInt(row["TotalRowCount"], 10);
+        tables.push(table);
+      }
+      this.tables = tables;
+      // });
+      this.autoSave = true;
+      this.saveData(this.tables).then(() => {
+        console.log("data saved");
+      });
+      this.loading = false;
+    }
+    this.saveDataLoaded = true;
+    return this.tables;
   }
 
   @computed
@@ -132,6 +207,7 @@ export class Table {
   @observable tableName = "";
   @observable columns = [];
   @observable candidateKeys = [];
+  @observable foreignKeys = [];
   @observable rowCount = 0;
   @observable shouldSave = true;
 
@@ -176,7 +252,7 @@ export class Table {
         this.tableName +
         "'"
     );
-    console.log(result);
+    // console.log(result);
     // var request2 = new mssql.Request();
     // const result2 = await request2.query(
     //   "SELECT * FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE where TABLE_NAME='" +
@@ -246,47 +322,92 @@ export class Table {
       }
       data.push(tempStructure);
     }
-    console.log(data);
+    // console.log(data);
     this.columns = data;
   }
 
+  async loadNullColumns() {
+    for (let i in this.columns) {
+      console.log(i, this.columns.length, this.columns[i]);
+      var column = this.columns[i];
+      const excluded = ["image"];
+      column["isNull"] = false;
+      if (excluded.indexOf(column.dataType) < 0) {
+        let r;
+        if (column.dataType === "varchar") {
+          r = await this.executeSQLQuery(
+            'SELECT TOP(1) "' +
+              column.columnName +
+              '" FROM [' +
+              this.tableName +
+              '] WHERE "' +
+              column.columnName +
+              "\" <> 'null' AND \"" +
+              column.columnName +
+              "\" <> '' AND \"" +
+              column.columnName +
+              '" IS NOT NULL'
+          );
+        } else {
+          r = await this.executeSQLQuery(
+            'SELECT TOP(1) "' +
+              column.columnName +
+              '" FROM [' +
+              this.tableName +
+              '] WHERE "' +
+              column.columnName +
+              '" IS NOT NULL'
+          );
+        }
+        // console.log(r);
+        if (r.length <= 0) {
+          // all null
+          column["isNull"] = true;
+        }
+      }
+    }
+  }
+
   async findCandidateKeys() {
-    var r;
     var possibleColumns = [];
     let columns = this.columns;
     var index;
-    if (!this.candidateKeys) {
-      this.candidateKeys = [];
-    }
+    // if (!this.candidateKeys) {
+    this.candidateKeys = [];
+    // }
     for (index in columns) {
       let column = columns[index];
       // console.log(this.props.selectedStore.table.tableName);
       // console.log(column.columnName);
-      r = await this.executeSQLQuery(
-        "SELECT TOP(1) 'There is at least one non-NULL' AS note FROM \"" +
-          this.tableName +
-          '" WHERE "' +
-          column.columnName +
-          '" is NULL'
-      );
-      // console.log(r);
-      if (r.length === 0 && column.dataType !== "text") {
+      // console.log(column.dataType);
+      if (
+        column.dataType !== "binary" &&
+        column.dataType !== "bit" &&
+        column.dataType !== "image" &&
+        column.dataType !== "text" &&
+        column.dataType !== "xml" &&
+        column.isNull === false
+      ) {
+        // r = await this.executeSQLQuery(
+        //   "SELECT TOP(1) 'There is at least one non-NULL' AS note FROM \"" +
+        //     this.tableName +
+        //     '" WHERE "' +
+        //     column.columnName +
+        //     '" is NULL'
+        // );
+        // // console.log(r);
+        // if (r.length === 0 && column.dataType !== "text") {
         possibleColumns.push(column);
+        // }
       }
     }
-    // console.log(possibleColumns);
-    console.log(
-      possibleColumns.map(item => {
-        return item.columnName;
-      })
-    );
 
     let tcRes = await this.executeSQLQuery(
       "SELECT COUNT(*) as count FROM [" + this.tableName + "]"
     );
     // console.log(tcRes);
     var tableCount = tcRes[0]["count"];
-    console.log(tableCount);
+    // console.log(tableCount);
 
     // Test all possible combinations:
     // await this.testCombinations(possibleColumns, tableCount, 1);
@@ -294,16 +415,16 @@ export class Table {
     // console.log(this.candidateKeys);
     await this.testCombinationsAlternative(possibleColumns, tableCount);
     // console.log("all combinations tested");
+    this.saveData(this.asJson);
   }
 
   async testCombinationsAlternative(array, tableCount) {
+    // console.log(array);
     // start with all, then remove one at a time until it is no longer distinct.
     let res = await this.testIfAnyCombinationIsPossible(array, tableCount);
     // console.log("res:", res);
     if (!res) {
-      // If still possible candidate, remove the item.
-      // current.splice(index, 1);
-      console.log("no candidate keys exists");
+      // there are no unique row in the table. stop searching.
       return;
     }
     let current = [...array];
@@ -321,13 +442,23 @@ export class Table {
       }
     }
     if (current.length > 0) {
-      this.candidateKeys.push([...current]);
+      // console.log(current);
+      let n = current.map(item => {
+        // console.log(item);
+        return {
+          columnName: item.columnName,
+          dataType: item.dataType
+        };
+      });
+      // console.log(n);
+      this.candidateKeys.push(n);
       console.log(
         "candidate:",
         current.map(item => {
           return item.columnName;
         })
       );
+      // console.log(toJS(this.candidateKeys));
       // candidate key found
       // remove these items and try again withouth them.
       let newArray = [...array];
@@ -373,6 +504,7 @@ export class Table {
         for (var k = 0; k < singles[i].length; k++) {
           array.splice(array.indexOf(singles[i][k]), 1);
         }
+        // console.log(singles[i]);
         this.candidateKeys.push([...singles[i]]);
         // restart this level with new array.
         let possible = await this.testIfAnyCombinationIsPossible(
@@ -414,17 +546,166 @@ export class Table {
     return false;
   }
 
+  async findForeignKeys(allTables) {
+    await mssql.connect(this.store.connection.databaseConfig);
+
+    this.foreignKeys = [];
+    let selectedTable = this;
+    // TODO make better solution
+    if (this.rowCount < 2) {
+      return;
+    }
+    // let allTables = this.props.selectedStore.connection.databaseStructure
+    //   .tables;
+    console.log("starting foreign key search");
+    for (let index in selectedTable.candidateKeys) {
+      let key = selectedTable.candidateKeys[index];
+      // for every table check if any set of columns contain this key.
+      // console.log(toJS(this.props.selectedStore.connection.databaseStructure));
+      // console.log(toJS(allTables));
+      for (let tableIndex in allTables) {
+        let table = allTables[tableIndex];
+        if (table.rowCount > 0 && table.tableName !== selectedTable.tableName) {
+          let possibleColumns = [];
+          // find number of columns
+          for (let keyIndex in key) {
+            let keyColumn = key[keyIndex];
+            let pos = [];
+            for (let columnIndex in table.columns) {
+              let column = table.columns[columnIndex];
+              // console.log(column);
+              if (column.dataType === keyColumn.dataType) {
+                pos.push({ ...column });
+              }
+            }
+            if (pos.length > 0) {
+              possibleColumns.push(pos);
+            }
+          }
+
+          if (possibleColumns.length === key.length) {
+            // eliminate the columns that it can't be before doing all iterations.
+            // console.log(possibleColumns);
+            let tests = 0;
+            let t = [];
+            for (let i = 0; i < possibleColumns.length; i++) {
+              let q = [];
+              for (let j = 0; j < possibleColumns[i].length; j++) {
+                if (!possibleColumns[i][j].isNull) {
+                  let r = await this.executeSQLQuery(
+                    'IF NOT EXISTS ( SELECT "' +
+                      possibleColumns[i][j].columnName +
+                      '" FROM [' +
+                      table.tableName +
+                      '] WHERE "' +
+                      possibleColumns[i][j].columnName +
+                      '" IS NOT NULL EXCEPT SELECT "' +
+                      key[i].columnName +
+                      '" FROM [' +
+                      selectedTable.tableName +
+                      "] ) SELECT 'exists' as res ELSE SELECT 'no does not exist' as res"
+                  );
+                  // console.log(r);
+                  tests += 1;
+                  if (r[0]["res"] === "exists") {
+                    q.push(possibleColumns[i][j]);
+                  }
+                }
+              }
+              if (q.length > 0) {
+                t.push(q);
+              } else {
+                break;
+              }
+            }
+            console.log("tested columns: ", tests);
+            // console.log(t);
+            if (t.length === key.length) {
+              // try the possibilities if every column found a match:
+              let perms = permutations(t);
+              console.log("have doubles", perms);
+              perms = removeDoubles(perms);
+              console.log("removed doubles", perms);
+              // console.log(perms.length);
+              for (let i = 0; i < perms.length; i++) {
+                if ((i + 1) % 500 === 0) {
+                  console.log(i);
+                }
+
+                // test
+                let r = await this.executeSQLQuery(
+                  "IF NOT EXISTS \n( SELECT\n " +
+                    this.getSQLColumnsFromList(perms[i]) +
+                    " FROM [" +
+                    table.tableName +
+                    "] WHERE\n " +
+                    this.getSQLNotNULLFromList(perms[i]) +
+                    " \nEXCEPT SELECT " +
+                    this.getSQLColumnsFromList(key) +
+                    " FROM [" +
+                    selectedTable.tableName +
+                    "] ) \nSELECT 'exists' as res ELSE SELECT 'not' as res"
+                );
+                // console.log(r);
+                if (r[0]["res"] === "exists") {
+                  // verify that the target table is not only null.
+
+                  this.foreignKeys.push({
+                    pointingOnColumn: key,
+                    pkColumn: perms[i],
+                    pkTable: table.tableName
+                  });
+                  // console.log(this.foreignKeys);
+                  console.log(
+                    "possibility found: ",
+                    this.tableName,
+                    this.getSQLColumnsFromList(key),
+                    "From:",
+                    table.tableName,
+                    this.getSQLColumnsFromList(perms[i])
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    this.saveData(this.asJson);
+    console.log("foreign done");
+  }
+
+  getSQLColumnsFromList(array) {
+    var columns = '"';
+    for (var j = 0; j < array.length - 1; j++) {
+      columns += array[j].columnName + '",\n "';
+    }
+    columns += array[array.length - 1].columnName + '"';
+    return columns;
+  }
+
+  getSQLNotNULLFromList(array) {
+    var columns = '"';
+    for (var j = 0; j < array.length - 1; j++) {
+      columns += array[j].columnName + '" IS NOT NULL AND\n "';
+    }
+    columns += array[array.length - 1].columnName + '" IS NOT NULL';
+    return columns;
+  }
+
   async executeSQLQuery(query, depth = 0) {
     try {
-      await mssql.connect(this.store.connection.databaseConfig);
+      // await mssql.connect(this.store.connection.databaseConfig);
       // create Request object
       var request = new mssql.Request();
       const result = await request.query(query);
+      // console.log(result, query);
       return result;
     } catch (e) {
       console.log(query);
       console.log(e);
-      if (e.name === "ConnectionError" && depth < 0) {
+      if (e.name === "ConnectionError" && depth < 4) {
+        console.log("trying again");
         return await this.executeSQLQuery(query, depth + 1);
       }
     }
@@ -441,10 +722,12 @@ export class Table {
       this.shouldSave = data.shouldSave;
       this.autoSave = true;
       this.candidateKeys = data.candidateKeys;
+      this.foreignKeys = data.foreignKeys;
     }
   }
 
   saveData(data) {
+    console.log("save");
     // fileStore.set("selected", data);
     // console.log("saveData");
     // console.log(data, this.id);
@@ -462,7 +745,8 @@ export class Table {
       columns: this.columns,
       rowCount: this.rowCount,
       shouldSave: this.shouldSave,
-      candidateKeys: this.candidateKeys
+      candidateKeys: this.candidateKeys,
+      foreignKeys: this.foreignKeys
     };
   }
 }

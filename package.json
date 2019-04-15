@@ -19,7 +19,7 @@
     "uuid": "^3.3.2"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "concurrently \"cross-env BROWSER=none yarn react-scripts start\" \"wait-on http://localhost:3000 && electron .\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -35,7 +35,10 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "electron": "^4.0.4"
+    "electron": "^4.0.4",
+    "concurrently": "^3.6.0",
+    "cross-env": "^5.2.0",
+    "wait-on": "^3.2.0"
   },
   "main": "src/electron-starter.js"
 }

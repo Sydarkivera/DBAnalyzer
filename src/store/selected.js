@@ -13,6 +13,7 @@ export class Selected {
 
   constructor(connectionStore) {
     const data = fileStore.get("selected");
+    console.log(data);
     if (data) {
       this.autoSave = false;
       if (data.conId) {
@@ -26,13 +27,15 @@ export class Selected {
         this.connection.fetchDatabaseStrucutre();
       }
       if (data.tableId) {
-        // console.log(data.tableId);
-        this.table = this.connection.databaseStructure.tables.find(item => {
-          if (item.id === data.tableId) {
-            return true;
-          }
-          return false;
-        });
+        console.log(data.tableId);
+        this.table = this.connection.databaseStructure.getTable(data.tableId);
+        console.log(this.table);
+        // this.table = this.connection.databaseStructure.tables.find(item => {
+        //   if (item.id === data.tableId) {
+        //     return true;
+        //   }
+        //   return false;
+        // });
       }
       this.autoSave = true;
     }

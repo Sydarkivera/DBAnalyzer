@@ -3,8 +3,12 @@ import uuid from "uuid";
 
 import { DatabaseStructure } from "./databaseStructure";
 
+// const FileStore = window.require("electron-store");
+// const fileStore = new FileStore();
+
 const FileStore = window.require("electron-store");
 const fileStore = new FileStore();
+// fileStore.clear();
 
 export class Connection {
   id = uuid.v4();
@@ -19,7 +23,7 @@ export class Connection {
 
   store = null;
   autoSave = true;
-  connectionTimeout = 5000;
+  connectionTimeout = 3000;
   saveHandler = null;
 
   constructor(store, id = null) {
@@ -69,6 +73,7 @@ export class Connection {
 
   fetchDatabaseStrucutre(id) {
     // early exit if structure already exists
+    console.log(this.databaseStructure);
     if (this.databaseStructure) {
       return;
     }
@@ -95,7 +100,8 @@ export class Connection {
       user: this.username,
       server: this.server,
       database: this.database,
-      connectionTimeout: this.connectionTimeout
+      connectionTimeout: this.connectionTimeout,
+      requestTimeout: 1000000
     };
   }
 

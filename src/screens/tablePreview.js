@@ -1,10 +1,9 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { observer, inject } from "mobx-react";
-import { observable } from "mobx";
+import { observable, toJS } from "mobx";
 import "../App.css";
 import "./tablePreview.css";
-import { selectN } from "../functions/permutations";
 
 const mssql = window.require("mssql");
 
@@ -29,7 +28,7 @@ class TablePreviewScreen extends Component {
     try {
       // create Request object
 
-      await this.props.selectedStore.table.loadColumnData();
+      // await this.props.selectedStore.table.loadColumnData();
 
       // var request2 = new mssql.Request();
       // const result2 = await request2.query(
@@ -74,7 +73,8 @@ class TablePreviewScreen extends Component {
           "tinyint",
           "nvarchar",
           "money",
-          "real"
+          "real",
+          "xml"
         ];
         for (var i in result) {
           var row = result[i];
@@ -82,7 +82,7 @@ class TablePreviewScreen extends Component {
           for (var index in structure) {
             let type = structure[index].dataType;
             if (stringTypes.includes(type)) {
-              tempData.push(row[structure[index].columnName]);
+              tempData.push("'" + row[structure[index].columnName] + "'");
             } else if (type === "datetime") {
               var d = new Date(row[structure[index].columnName]);
 
@@ -95,8 +95,13 @@ class TablePreviewScreen extends Component {
                 for (var si in row[structure[index].columnName]) {
                   s += row[structure[index].columnName][si];
                 }
-                tempData.push(s);
+                tempData.push("'" + s + "'");
               }
+            } else if (type === "varbinary") {
+              // tempData.push(
+              //   this.stringToBinary(row[structure[index].columnName], false)
+              // );
+              tempData.push(row[structure[index].columnName]);
             } else {
               tempData.push("unknown type: " + type);
             }
@@ -115,15 +120,41 @@ class TablePreviewScreen extends Component {
 
   async findCandidateKeys() {
     console.log("starting candidate search");
+    this.props.selectedStore.table.candidateKeys = [];
     await this.props.selectedStore.table.findCandidateKeys();
     console.log("done");
   }
 
-  async executeSQLQuery(query) {
-    // console.log(query);
-    await mssql.connect(this.props.selectedStore.connection.databaseConfig);
-    var request = await new mssql.Request();
-    return request.query(query);
+  async findForeignKeys() {
+    // let selectedTable = this.props.selectedStore.table;
+    let allTables = this.props.selectedStore.connection.databaseStructure
+      .tables;
+    await this.props.selectedStore.table.findForeignKeys(allTables);
+  }
+
+  getSQLColumnsFromList(array) {
+    var columns = '"';
+    for (var j = 0; j < array.length - 1; j++) {
+      columns += array[j].columnName + '", "';
+    }
+    columns += array[array.length - 1].columnName + '"';
+    return columns;
+  }
+
+  async executeSQLQuery(query, depth = 0) {
+    try {
+      await mssql.connect(this.props.selectedStore.connection.databaseConfig);
+      // create Request object
+      var request = new mssql.Request();
+      const result = await request.query(query);
+      return result;
+    } catch (e) {
+      console.log(query);
+      console.log(e);
+      if (e.name === "ConnectionError" && depth < 0) {
+        return await this.executeSQLQuery(query, depth + 1);
+      }
+    }
   }
 
   displayNextRows = () => {
@@ -146,11 +177,15 @@ class TablePreviewScreen extends Component {
       let struct = structure[index];
       let pk = null;
       if (struct.primaryKey) {
-        pk = [<br />, "PK"];
+        pk = [<br key={2} />, "PK"];
       }
       let fk = null;
       if (struct.foreign_keys.length > 0) {
-        fk = [<br />, struct.foreign_keys.length + " FK ", <br />];
+        fk = [
+          <br key={3} />,
+          struct.foreign_keys.length + " FK ",
+          <br key={4} />
+        ];
         for (let i in struct.foreign_keys) {
           fk.push(struct.foreign_keys[i].referenceTable);
         }
@@ -158,14 +193,16 @@ class TablePreviewScreen extends Component {
       headerItems.push(
         <th className="preview-table-item" key={struct.columnName}>
           {struct.columnName}
-          <br />
+          <br key={1} />
           {struct.dataType}
           {pk}
           {fk}
         </th>
       );
     }
+    // return null;
     if (this.data.length > 0) {
+      console.log(toJS(this.props.selectedStore.table.candidateKeys));
       var data = [];
       for (let index in this.data) {
         var rowContent = [];
@@ -207,6 +244,7 @@ class TablePreviewScreen extends Component {
   }
 
   render() {
+    console.log(this.props.selectedStore.table.foreignKeys);
     return (
       <div className="DatabaseScreen">
         <div className="TopMenu">
@@ -233,6 +271,56 @@ class TablePreviewScreen extends Component {
             : ""}
         </p>
         <p onClick={() => this.findCandidateKeys()}>Find candidate keys</p>
+        <p onClick={() => this.findForeignKeys()}>Find foreign keys</p>
+        <p>
+          Found Candidate_keys:{" "}
+          {this.props.selectedStore.table.candidateKeys
+            .reduce((accumulator, item) => {
+              console.log(item.length, accumulator);
+              return (
+                accumulator +
+                "[" +
+                item
+                  .reduce((accumulator, i) => {
+                    // console.log(i);
+                    return accumulator + "'" + i.columnName + "', ";
+                  }, "")
+                  .slice(0, -2) +
+                "], "
+              );
+            }, "")
+            .slice(0, -2)}
+        </p>
+        <p>
+          Found Foreign_keys:{" "}
+          {this.props.selectedStore.table.foreignKeys
+            ? this.props.selectedStore.table.foreignKeys
+                .reduce((accumulator, item) => {
+                  // console.log(item, accumulator);
+                  return (
+                    accumulator +
+                    "{pkTable: " +
+                    item.pkTable +
+                    ", pkColumns: [" +
+                    item.pkColumn
+                      .reduce((accumulator, i) => {
+                        // console.log(i);
+                        return accumulator + "'" + i.columnName + "', ";
+                      }, "")
+                      .slice(0, -2) +
+                    "], sourceColumn: [" +
+                    item.pointingOnColumn
+                      .reduce((accumulator, i) => {
+                        // console.log(i);
+                        return accumulator + "'" + i.columnName + "', ";
+                      }, "")
+                      .slice(0, -2) +
+                    "]}, "
+                  );
+                }, "")
+                .slice(0, -2)
+            : ""}
+        </p>
         {this.renderData()}
         <p onClick={this.displayNextRows}>Next rows</p>
       </div>
