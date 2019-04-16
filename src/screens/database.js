@@ -4,7 +4,6 @@ import { observable } from "mobx";
 import { observer, inject } from "mobx-react";
 import "../App.css";
 import "./database.css";
-import { testLikness } from "../functions/permutations";
 
 import { FaRegCircle, FaRegCheckCircle } from "react-icons/fa";
 
@@ -141,213 +140,42 @@ class DatabaseScreen extends Component {
     console.log("done");
   }
 
-  async startAnalysis(start = 0) {
+  async startAnalysis(start = 0, resume = false) {
     var structure = this.props.selectedStore.connection.databaseStructure;
-    // .completedStep = 0;
-    // this.step = 0;
-    structure.completedStep = 0;
     var a = 0;
-    const tables = this.tables;
-    // this.step += 1;
-    // this.props.selectedStore.connection.databaseStructure.completedStep += 1;
-    // this.props.selectedStore.connection.databaseStructure.completedStep = this.step;
-    structure.completedStep += 1;
-    if (start <= a++) {
-      this.tableStructureLoaded = 0;
-      for (let key in tables) {
-        let table = tables[key];
-        if (table.rowCount > 0) {
-          await table.loadColumnData();
-          this.tableStructureLoaded += 1;
-        }
-      }
+    // structure.step = 0;
+    if (!resume) {
+      structure.step = 1;
+      structure.tablesToVerify = [];
+    } else {
+      start = structure.step - 1;
     }
-    structure.completedStep += 1;
-    // this.props.selectedStore.connection.databaseStructure.completedStep += 2;
-    return;
-    // this.step += 1;
-    // this.props.selectedStore.connection.databaseStructure.completedStep = this.step;
     if (start <= a++) {
-      this.columnsCheckedFoNull = 0;
-      for (let key in tables) {
-        let table = tables[key];
-        if (table.rowCount > 0) {
-          await table.loadNullColumns();
-          this.columnsCheckedFoNull += 1;
-        }
-      }
+      await structure.analyseTableStructures();
+      structure.step += 1;
     }
-    this.step += 1;
-    this.props.selectedStore.connection.databaseStructure.completedStep = this.step;
     if (start <= a++) {
-      this.tableCandidateKeysLoaded = 0;
-      for (let key in tables) {
-        let table = tables[key];
-        if (table.rowCount > 0) {
-          await table.findCandidateKeys();
-          this.tableCandidateKeysLoaded += 1;
-        }
-      }
+      await structure.findNullColumns();
+      structure.step += 1;
     }
-    this.step += 1;
-    this.props.selectedStore.connection.databaseStructure.completedStep = this.step;
     if (start <= a++) {
-      this.tableForeignKeysLoaded = 0;
-      for (let key in tables) {
-        let table = tables[key];
-        if (table.rowCount > 0) {
-          await table.findForeignKeys(tables);
-          this.tableForeignKeysLoaded += 1;
-        }
-      }
+      await structure.findRemovableTablesBasedOnSize();
+      structure.step += 1;
     }
-    this.step += 1;
-    this.props.selectedStore.connection.databaseStructure.completedStep = this.step;
     if (start <= a++) {
-      this.numberOfTablesWithOneColumn = 0;
-      for (let key in tables) {
-        let table = tables[key];
-        if (table.rowCount > 0) {
-          if (table.columns.length <= 1) {
-            this.numberOfTablesWithOneColumn += 1;
-            table.shouldSave = false;
-          }
-          // await table.findForeignKeys();
-          // this.numberOfTablesWithOneColumn += 1;
-        }
-      }
+      await structure.findCandidateKeys();
+      structure.step += 1;
     }
-    this.step += 1;
-    this.props.selectedStore.connection.databaseStructure.completedStep = this.step;
     if (start <= a++) {
-      // find all tables with no references of foreign keys
-      let emptyTables = [];
-      let pointedOnNames = new Set();
-      for (let key in tables) {
-        let table = tables[key];
-        if (table.rowCount > 0) {
-          if (table.foreignKeys.length === 0) {
-            emptyTables.push(table);
-          } else {
-            for (let i = 0; i < table.foreignKeys.length; i++) {
-              pointedOnNames.add(table.foreignKeys[i].pkTable);
-            }
-          }
-        }
-      }
-      console.log(emptyTables.length);
-      let res = [];
-      for (let emptyKey in emptyTables) {
-        let emptyTable = emptyTables[emptyKey];
-        if (!pointedOnNames.has(emptyTable.tableName)) {
-          res.push(emptyTable);
-          emptyTable.shouldSave = false;
-        }
-      }
-      console.log(
-        "emptyTables",
-        res.map(item => {
-          return item.tableName;
-        })
-      );
+      await structure.findForeignKeys();
+      structure.step += 1;
+    }
+    // if (start <= a++) {
+    // find all tables with no references of foreign keys
 
-      // find disjoint sets.
-
-      let t;
-      let validTables = [];
-      for (let i = 0; i < tables.length; i++) {
-        if (tables[i].rowCount > 1 && tables[i].shouldSave === true) {
-          validTables.push(tables[i]);
-        }
-      }
-      while (validTables.length > 0) {
-        t = validTables[0];
-        let firstSet = new Set();
-        firstSet.add(t.tableName);
-        // console.log(t);
-        this.checkSet(firstSet, t, tables);
-        console.log("found set: ", firstSet);
-        // console.log(newSet);
-        // let r = [];
-        validTables = validTables.filter(item => {
-          return !firstSet.has(item.tableName);
-        });
-        // for (let i = 0; i < tables.length; i++) {
-        //   if (tables[i].rowCount > 1 && tables[i].shouldSave === true) {
-        //     if (!firstSet.has(tables[i].tableName)) {
-        //       r.push(tables[i].tableName);
-        //     }
-        //   }
-        // }
-        // console.log();
-      }
-    }
-    this.step += 1;
-    this.props.selectedStore.connection.databaseStructure.completedStep = this.step;
-  }
-
-  checkSet(existing, t, tables) {
-    const liknessThreshold = 0.8;
-    // console.log(t);
-    // console.log(t.tableName);
-    let newSet = new Set();
-    for (let i = 0; i < t.foreignKeys.length; i++) {
-      // add referenced table.
-      // firstSet.add(t.foreignKeys[i].pkTable);
-      // console.log(t.foreignKeys[i]);
-      // return;
-      if (
-        testLikness(
-          t.foreignKeys[i].pkColumn.map(item => {
-            return item.columnName;
-          }),
-          t.foreignKeys[i].pointingOnColumn.map(item => {
-            return item.columnName;
-          })
-        ) > liknessThreshold
-      ) {
-        if (!existing.has(t.foreignKeys[i].pkTable)) {
-          existing.add(t.foreignKeys[i].pkTable);
-          newSet.add(
-            tables.find(item => {
-              return t.foreignKeys[i].pkTable === item.tableName;
-            })
-          );
-        }
-      }
-    }
-    for (let i = 0; i < tables.length; i++) {
-      if (tables[i].foreignKeys && tables[i].shouldSave === true) {
-        for (let j = 0; j < tables[i].foreignKeys.length; j++) {
-          if (tables[i].foreignKeys[j].pkTable === t.tableName) {
-            if (
-              testLikness(
-                tables[i].foreignKeys[j].pkColumn.map(item => {
-                  return item.columnName;
-                }),
-                tables[i].foreignKeys[j].pointingOnColumn.map(item => {
-                  return item.columnName;
-                })
-              ) > liknessThreshold
-            ) {
-              if (!existing.has(tables[i].tableName)) {
-                existing.add(tables[i].tableName);
-                newSet.add(tables[i]);
-              }
-            }
-          }
-        }
-      }
-    }
-
-    newSet.forEach(item => {
-      this.checkSet(existing, item, tables);
-    }, this);
-
-    // for (let i = 0; i < newSet.size; i++) {
-    //   this.checkSet(existing, newSet[i], tables);
+    await structure.findIslands();
+    structure.step += 1;
     // }
-    // console.log(existing);
   }
 
   renderViews() {
@@ -364,7 +192,8 @@ class DatabaseScreen extends Component {
   render() {
     // const { loading, tables, numberOfEmptyTables, totalRows } = this;
     const connection = this.props.selectedStore.connection;
-    const step = connection.databaseStructure.completedStep;
+    const structure = connection.databaseStructure;
+    const step = structure.step;
 
     var loadingLabel = null;
     var allTables = null;
@@ -407,55 +236,84 @@ class DatabaseScreen extends Component {
       var s = 1;
       loadingLabel = (
         <div>
-          <p onClick={() => this.startAnalysis(0)}>
-            Start analysis{" "}
-            {
-              this.props.selectedStore.connection.databaseStructure
-                .completedStep
-            }
+          <p onClick={() => this.startAnalysis(6, true)}>
+            Start analysis {step}
           </p>
-          {step >= s++ ? (
-            <p>
-              Tables Structure Analysed: {this.tableStructureLoaded}/{connection
-                .databaseStructure.tables.length -
-                connection.databaseStructure.numberOfEmptyTables}
+          {structure.tablesToVerify.length > 0 ? (
+            <p
+              onClick={() => {
+                this.props.history.push("/database/verification");
+              }}
+            >
+              Verify tables {structure.tablesToVerify.length}
             </p>
           ) : (
             ""
           )}
           {step >= s++ ? (
             <p>
-              Tables null checks: {this.columnsCheckedFoNull}/{connection
-                .databaseStructure.tables.length -
-                connection.databaseStructure.numberOfEmptyTables}
+              Tables Structure Analysed: {structure.tableStructureLoaded}/{structure
+                .tables.length - structure.numberOfEmptyTables}
             </p>
           ) : (
             ""
           )}
           {step >= s++ ? (
             <p>
-              Loaded candidatekeys: {this.tableCandidateKeysLoaded}/{connection
-                .databaseStructure.tables.length -
-                connection.databaseStructure.numberOfEmptyTables}
+              Tables null checks: {structure.columnsCheckedFoNull}/{structure
+                .tables.length - structure.numberOfEmptyTables}
+            </p>
+          ) : (
+            ""
+          )}
+          {step >= s++ ? (
+            <div>
+              <p>
+                Tables with one column: {structure.numberOfTablesWithOneColumn}
+              </p>
+              <p>
+                {structure.tablesToVerify
+                  .filter(item => {
+                    return item.type !== "island";
+                  })
+                  .map(item => {
+                    return item.tables + ": " + item.reason;
+                  })}
+              </p>
+            </div>
+          ) : (
+            ""
+          )}
+          {step >= s++ ? (
+            <p>
+              Loaded candidatekeys: {structure.tableCandidateKeysLoaded}/{structure
+                .tables.length - structure.numberOfEmptyTables}
             </p>
           ) : (
             ""
           )}
           {step >= s++ ? (
             <p>
-              Loaded foreign keys: {this.tableForeignKeysLoaded}/{connection
-                .databaseStructure.tables.length -
-                connection.databaseStructure.numberOfEmptyTables}
+              Loaded foreign keys: {structure.tableForeignKeysLoaded}/{structure
+                .tables.length - structure.numberOfEmptyTables}
             </p>
           ) : (
             ""
           )}
           {step >= s++ ? (
-            <p>Tables with one column: {this.numberOfTablesWithOneColumn}</p>
+            <div>
+              {structure.tablesToVerify
+                .filter(item => {
+                  return item.type === "island";
+                })
+                .map((item, i) => {
+                  return <p key={i}>{item.tables + ": " + item.reason}</p>;
+                })}
+              <p>Done</p>
+            </div>
           ) : (
             ""
           )}
-          {step >= s++ ? <p>Done</p> : ""}
         </div>
       );
 

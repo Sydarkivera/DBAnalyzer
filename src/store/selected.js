@@ -13,7 +13,7 @@ export class Selected {
 
   constructor(connectionStore) {
     const data = fileStore.get("selected");
-    console.log(data);
+    // console.log(data);
     if (data) {
       this.autoSave = false;
       if (data.conId) {

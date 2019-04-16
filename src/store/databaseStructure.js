@@ -1,11 +1,7 @@
 import { observable, reaction, computed, action } from "mobx";
-import uuid from "uuid";
 import { Connection } from "./connections";
-import {
-  selectN,
-  permutations,
-  removeDoubles
-} from "../functions/permutations";
+import { testLikness } from "../functions/permutations";
+import { Table } from "./table.js";
 
 const FileStore = window.require("electron-store");
 const fileStore = new FileStore();
@@ -19,40 +15,26 @@ export class DatabaseStructure {
   @observable loading = true;
   @observable saveDataLoaded = false;
 
-  @observable completedStep = 0;
-  @observable validateRemove = [];
+  @observable tableStructureLoaded = 0;
+  @observable tableCandidateKeysLoaded = 0;
+  @observable tableForeignKeysLoaded = 0;
+  @observable columnsCheckedFoNull = 0;
+  @observable numberOfTablesWithOneColumn = 0;
+  @observable step = 0;
+  @observable tablesToVerify = [];
 
   connection: Connection = null;
   autoSave = true;
-  // @observable connection: Connection = null;
-  // @observable table = "";
-  // shouldSave = true;
-  // autoSave = true;
-  //
+
   constructor(connection) {
     this.connection = connection;
 
-    // this.pool = new mssql.ConnectionPool(connection.databaseConfig).connect();
-    // if (id) {
-    // load structure from file
-    // } else {
-    // this.tables = [];
-    // this.loading = false;
-    // }
-
     this.saveHandler = reaction(
-      () => this.tables.length,
-      () => {
-        if (this.autoSave) {
-          this.saveData(this.tables);
-        }
-      }
-    );
-    this.saveHandler2 = reaction(
       () => this.asJson,
       json => {
+        // console.log("updated", json);
         if (this.autoSave) {
-          this.saveData2(json);
+          this.saveData(json);
         }
       }
     );
@@ -81,28 +63,33 @@ export class DatabaseStructure {
       setTimeout(() => {
         try {
           const data = fileStore.get("database_" + this.connection.id, null);
-          const data2 = fileStore.get(
-            "database_info_" + this.connection.id,
-            null
-          );
-          this.autoSave = false;
-          if (data2 !== null) {
-            this.completedStep = data2.completedStep;
-            this.validateRemove = data2.validateRemove;
-          }
           if (data !== null) {
-            for (let index in data) {
-              this.tables.push(new Table(this, data[index]));
+            this.autoSave = false;
+            // console.log(this.progressInformation);
+            // this.progressInformation = data.progressInformation;
+            // console.log(data.progressInformation, this.progressInformation);
+            // console.log("loaded progressinfo");
+            this.tableStructureLoaded = data.tableStructureLoaded;
+            this.tableCandidateKeysLoaded = data.tableCandidateKeysLoaded;
+            this.tableForeignKeysLoaded = data.tableForeignKeysLoaded;
+            this.columnsCheckedFoNull = data.columnsCheckedFoNull;
+            this.numberOfTablesWithOneColumn = data.numberOfTablesWithOneColumn;
+            this.step = data.step;
+            this.tablesToVerify = data.tablesToVerify
+              ? data.tablesToVerify
+              : [];
+            for (let index in data.tables) {
+              this.tables.push(new Table(this, data.tables[index]));
             }
             // return true;
+            this.loading = false;
+            this.autoSave = true;
             resolve(true);
             this.saveDataLoaded = true;
           } else {
             // return false;
             resolve(false);
           }
-          this.loading = false;
-          this.autoSave = true;
         } catch (err) {
           console.error(err);
           resolve(false);
@@ -111,23 +98,11 @@ export class DatabaseStructure {
     });
   }
 
-  saveData = async tables => {
+  saveData = async data => {
     // fileStore.set("selected", data);
-    let data = tables.map(table => {
-      return table.id;
-    });
+    // console.log(data);
     try {
       await fileStore.set("database_" + this.connection.id, data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  saveData2 = async data => {
-    // fileStore.set("selected", data);
-    console.log(data);
-    try {
-      await fileStore.set("database_info_" + this.connection.id, data);
     } catch (e) {
       console.error(e);
     }
@@ -136,14 +111,24 @@ export class DatabaseStructure {
   @computed
   get asJson() {
     return {
-      completedStep: this.completedStep,
-      validateRemove: this.validateRemove
+      tableStructureLoaded: this.tableStructureLoaded,
+      tableCandidateKeysLoaded: this.tableCandidateKeysLoaded,
+      tableForeignKeysLoaded: this.tableForeignKeysLoaded,
+      columnsCheckedFoNull: this.columnsCheckedFoNull,
+      numberOfTablesWithOneColumn: this.numberOfTablesWithOneColumn,
+      step: this.step,
+      tables: this.tables.map(table => {
+        return table.id;
+      }),
+      // tableLength: this.tables.length
+      tablesToVerify: this.tablesToVerify
     };
   }
 
   @action
   async fetchAllTables() {
     if (this.saveDataLoaded === true) {
+      console.log("tables already loaded");
       return this.tables;
     }
     let res = await this.loadSavedData();
@@ -170,7 +155,7 @@ export class DatabaseStructure {
       this.tables = tables;
       // });
       this.autoSave = true;
-      this.saveData(this.tables).then(() => {
+      this.saveData(this.asJson).then(() => {
         console.log("data saved");
       });
       this.loading = false;
@@ -200,555 +185,214 @@ export class DatabaseStructure {
     }
     return num;
   }
-}
 
-export class Table {
-  id = null;
-  @observable tableName = "";
-  @observable columns = [];
-  @observable candidateKeys = [];
-  @observable foreignKeys = [];
-  @observable rowCount = 0;
-  @observable shouldSave = true;
+  // steps for analysing the data:
 
-  saveHandler = null;
-  autoSave = true;
-  store: DatabaseStructure = null;
-
-  constructor(store: DatabaseStructure, id = null) {
-    this.store = store;
-    if (id !== null) {
-      //load saved data
-      this.loadSavedData(id);
-      this.id = id;
-    } else {
-      this.id = uuid.v4();
-    }
-
-    // this.loadColumnData();
-
-    this.saveHandler = reaction(
-      () => this.asJson,
-      json => {
-        // console.log("reaction");
-        if (this.autoSave) {
-          this.saveData(json);
-        }
+  async analyseTableStructures() {
+    this.tableStructureLoaded = 0;
+    for (let key in this.tables) {
+      let table = this.tables[key];
+      if (table.rowCount > 0) {
+        await table.loadColumnData();
+        this.tableStructureLoaded += 1;
       }
-    );
+    }
   }
-
-  @action
-  async loadColumnData() {
-    // console.log(this.columns);
-    // if (this.columns.length > 0) {
-    //   return;
-    // }
-    await mssql.connect(this.store.connection.databaseConfig);
-    // create Request object
-    var request = new mssql.Request();
-    const result = await request.query(
-      "SELECT * FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='" +
-        this.tableName +
-        "'"
-    );
-    // console.log(result);
-    // var request2 = new mssql.Request();
-    // const result2 = await request2.query(
-    //   "SELECT * FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE where TABLE_NAME='" +
-    //     this.tableName +
-    //     "'"
-    // );
-    // console.log(result2);
-    // var request3 = new mssql.Request();
-    // const result3 = await request3.query(
-    //   "SELECT OBJECT_NAME(f.object_id) as ForeignKetConstraintName, OBJECT_NAME(f.parent_object_id) TableName, COL_NAME(fk.parent_object_id,fk.parent_column_id) ColumnName, OBJECT_NAME(fk.referenced_object_id) as ReferencedTableName, COL_NAME(fk.referenced_object_id, fk.referenced_column_id) as ReferencedColumnName\n\n FROM sys.foreign_keys AS f\nINNER JOIN sys.foreign_key_columns AS fk\n ON f.OBJECT_ID = fk.constraint_object_id\n INNER JOIN sys.tables t\n ON fk.referenced_object_id = t.object_id\n WHERE OBJECT_NAME(fk.referenced_object_id) = '" +
-    //     this.tableName +
-    //     "' or OBJECT_NAME(f.object_id) = '" +
-    //     this.tableName +
-    //     "'"
-    // );
-    // console.log(result3);
-
-    var request4 = new mssql.Request();
-    const result4 = await request4.query(
-      "SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE ccu ON tc.CONSTRAINT_NAME = ccu.Constraint_name WHERE tc.CONSTRAINT_TYPE = 'Primary Key' and tc.TABLE_NAME='" +
-        this.tableName +
-        "'"
-    );
-    let primaryKeys = [];
-    for (let index in result4) {
-      primaryKeys.push(result4[index]["COLUMN_NAME"]);
-    }
-    // console.log(result4);
-    // var request5 = new mssql.Request();
-    // const result5 = await request5.query(
-    //   "SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE ccu ON tc.CONSTRAINT_NAME = ccu.Constraint_name WHERE tc.CONSTRAINT_TYPE = 'Foreign Key' and tc.TABLE_NAME='" +
-    //     this.tableName +
-    //     "'"
-    // );
-    // console.log(result5);
-
-    let foreign_keys = await this.executeSQLQuery(
-      "SELECT f.name AS foreign_key_name, OBJECT_NAME(f.parent_object_id) AS table_name, OBJECT_NAME (f.referenced_object_id) AS referenced_object, COL_NAME(fc.parent_object_id, fc.parent_column_id) AS constraint_column_name, COL_NAME(fc.referenced_object_id, fc.referenced_column_id) AS referenced_column_name FROM sys.foreign_keys as f INNER JOIN sys.foreign_key_columns AS fc ON f.object_id = fc.constraint_object_id WHERE f.parent_object_id = OBJECT_ID('" +
-        this.tableName +
-        "')"
-    );
-    // console.log(foreign_keys);
-
-    var data = [];
-    for (var index in result) {
-      let tempStructure = {
-        columnName: result[index]["COLUMN_NAME"],
-        dataType: result[index]["DATA_TYPE"],
-        primaryKey: false,
-        foreign_keys: []
-      };
-      if (primaryKeys.includes(tempStructure.columnName)) {
-        tempStructure.primaryKey = true;
+  async findNullColumns() {
+    this.columnsCheckedFoNull = 0;
+    for (let key in this.tables) {
+      let table = this.tables[key];
+      if (table.rowCount > 0) {
+        await table.loadNullColumns();
+        this.columnsCheckedFoNull += 1;
       }
-
-      // check if the column is a foreign key
-      for (let index in foreign_keys) {
-        if (
-          foreign_keys[index]["constraint_column_name"] ===
-          tempStructure.columnName
-        ) {
-          tempStructure.foreign_keys.push({
-            referenceTable: foreign_keys[index]["referenced_object"],
-            referenceColumn: foreign_keys[index]["referenced_column_name"]
+    }
+  }
+  async findRemovableTablesBasedOnSize() {
+    this.numberOfTablesWithOneColumn = 0;
+    for (let key in this.tables) {
+      let table = this.tables[key];
+      if (table.rowCount > 0) {
+        if (table.columns.length <= 1) {
+          this.numberOfTablesWithOneColumn += 1;
+          this.tablesToVerify.push({
+            tables: [table.tableName],
+            reason: "Only have one column",
+            type: "oneColumn"
           });
+          // table.shouldSave = false;
         }
-      }
-      data.push(tempStructure);
-    }
-    // console.log(data);
-    this.columns = data;
-  }
-
-  async loadNullColumns() {
-    for (let i in this.columns) {
-      console.log(i, this.columns.length, this.columns[i]);
-      var column = this.columns[i];
-      const excluded = ["image"];
-      column["isNull"] = false;
-      if (excluded.indexOf(column.dataType) < 0) {
-        let r;
-        if (column.dataType === "varchar") {
-          r = await this.executeSQLQuery(
-            'SELECT TOP(1) "' +
-              column.columnName +
-              '" FROM [' +
-              this.tableName +
-              '] WHERE "' +
-              column.columnName +
-              "\" <> 'null' AND \"" +
-              column.columnName +
-              "\" <> '' AND \"" +
-              column.columnName +
-              '" IS NOT NULL'
-          );
-        } else {
-          r = await this.executeSQLQuery(
-            'SELECT TOP(1) "' +
-              column.columnName +
-              '" FROM [' +
-              this.tableName +
-              '] WHERE "' +
-              column.columnName +
-              '" IS NOT NULL'
-          );
-        }
-        // console.log(r);
-        if (r.length <= 0) {
-          // all null
-          column["isNull"] = true;
-        }
+        // await table.findForeignKeys();
+        // this.numberOfTablesWithOneColumn += 1;
       }
     }
   }
 
   async findCandidateKeys() {
-    var possibleColumns = [];
-    let columns = this.columns;
-    var index;
-    // if (!this.candidateKeys) {
-    this.candidateKeys = [];
-    // }
-    for (index in columns) {
-      let column = columns[index];
-      // console.log(this.props.selectedStore.table.tableName);
-      // console.log(column.columnName);
-      // console.log(column.dataType);
-      if (
-        column.dataType !== "binary" &&
-        column.dataType !== "bit" &&
-        column.dataType !== "image" &&
-        column.dataType !== "text" &&
-        column.dataType !== "xml" &&
-        column.isNull === false
-      ) {
-        // r = await this.executeSQLQuery(
-        //   "SELECT TOP(1) 'There is at least one non-NULL' AS note FROM \"" +
-        //     this.tableName +
-        //     '" WHERE "' +
-        //     column.columnName +
-        //     '" is NULL'
-        // );
-        // // console.log(r);
-        // if (r.length === 0 && column.dataType !== "text") {
-        possibleColumns.push(column);
-        // }
+    this.tableCandidateKeysLoaded = 0;
+    for (let key in this.tables) {
+      let table = this.tables[key];
+      if (table.rowCount > 0) {
+        await table.findCandidateKeys();
+        this.tableCandidateKeysLoaded += 1;
       }
     }
-
-    let tcRes = await this.executeSQLQuery(
-      "SELECT COUNT(*) as count FROM [" + this.tableName + "]"
-    );
-    // console.log(tcRes);
-    var tableCount = tcRes[0]["count"];
-    // console.log(tableCount);
-
-    // Test all possible combinations:
-    // await this.testCombinations(possibleColumns, tableCount, 1);
-    // console.log("all combinations tested");
-    // console.log(this.candidateKeys);
-    await this.testCombinationsAlternative(possibleColumns, tableCount);
-    // console.log("all combinations tested");
-    this.saveData(this.asJson);
   }
 
-  async testCombinationsAlternative(array, tableCount) {
-    // console.log(array);
-    // start with all, then remove one at a time until it is no longer distinct.
-    let res = await this.testIfAnyCombinationIsPossible(array, tableCount);
-    // console.log("res:", res);
-    if (!res) {
-      // there are no unique row in the table. stop searching.
-      return;
-    }
-    let current = [...array];
-    for (var index = 0; index < current.length; index++) {
-      let temp = [...current];
-      // latest = current[index];
-      temp.splice(index, 1);
-      // test again.
-      res = await this.testIfAnyCombinationIsPossible(temp, tableCount);
-      if (res) {
-        // console.log("still possible");
-        // If still possible candidate, remove the item.
-        current.splice(index, 1);
-        index -= 1;
+  async findForeignKeys() {
+    this.tableForeignKeysLoaded = 0;
+    for (let key in this.tables) {
+      let table = this.tables[key];
+      if (table.rowCount > 0) {
+        await table.findForeignKeys(this.tables);
+        this.tableForeignKeysLoaded += 1;
       }
     }
-    if (current.length > 0) {
-      // console.log(current);
-      let n = current.map(item => {
-        // console.log(item);
-        return {
-          columnName: item.columnName,
-          dataType: item.dataType
-        };
+  }
+
+  async findIslands() {
+    let emptyTables = [];
+    let pointedOnNames = new Set();
+    for (let key in this.tables) {
+      let table = this.tables[key];
+      if (table.rowCount > 0) {
+        if (table.foreignKeys.length === 0) {
+          emptyTables.push(table);
+        } else {
+          for (let i = 0; i < table.foreignKeys.length; i++) {
+            pointedOnNames.add(table.foreignKeys[i].pkTable);
+          }
+        }
+      }
+    }
+    console.log(emptyTables.length);
+    let res = [];
+    let sets = [];
+    for (let emptyKey in emptyTables) {
+      let emptyTable = emptyTables[emptyKey];
+      if (!pointedOnNames.has(emptyTable.tableName)) {
+        res.push(emptyTable);
+        emptyTable.shouldSave = false;
+      }
+    }
+    console.log(
+      "emptyTables",
+      res.map(item => {
+        return item.tableName;
+      })
+    );
+
+    // find disjoint sets.
+
+    let t;
+    let validTables = [];
+    for (let i = 0; i < this.tables.length; i++) {
+      if (this.tables[i].rowCount > 1 && this.tables[i].shouldSave === true) {
+        validTables.push(this.tables[i]);
+      }
+    }
+    while (validTables.length > 0) {
+      t = validTables[0];
+      let firstSet = new Set();
+      firstSet.add(t.tableName);
+      // console.log(t);
+      this.checkSet(firstSet, t, this.tables);
+      // console.log("found set: ", firstSet);
+      sets.push(firstSet);
+      // console.log(newSet);
+      // let r = [];
+      validTables = validTables.filter(item => {
+        return !firstSet.has(item.tableName);
       });
-      // console.log(n);
-      this.candidateKeys.push(n);
-      console.log(
-        "candidate:",
-        current.map(item => {
-          return item.columnName;
-        })
-      );
-      // console.log(toJS(this.candidateKeys));
-      // candidate key found
-      // remove these items and try again withouth them.
-      let newArray = [...array];
-      for (let i = 0; i < current.length; i++) {
-        newArray = newArray.filter(item => {
-          return item.columnName !== current[i].columnName;
+      // for (let i = 0; i < tables.length; i++) {
+      //   if (tables[i].rowCount > 1 && tables[i].shouldSave === true) {
+      //     if (!firstSet.has(tables[i].tableName)) {
+      //       r.push(tables[i].tableName);
+      //     }
+      //   }
+      // }
+    }
+
+    var largestSet = 0;
+    for (let i = 0; i < sets.length; i++) {
+      if (sets[i].size > sets[largestSet].size) {
+        largestSet = i;
+      }
+    }
+    for (let i = 0; i < sets.length; i++) {
+      if (sets[i].size < sets[largestSet].size) {
+        this.tablesToVerify.push({
+          reason: "A set of tables that don't link to the main set",
+          tables: [...sets[i]],
+          type: "island"
         });
-        // index = newArray.indexOf(current[i]);
-        // if (index >= 0) {
-        //   newArray.splice(i, 1);
-        // }
       }
-      // console.log(
-      //   "rest:",
-      //   newArray.map(item => {
-      //     return item.columnName;
-      //   })
-      // );
-      await this.testCombinationsAlternative(newArray, tableCount);
     }
+    console.log(this.tablesToVerify);
+    console.log(sets);
   }
 
-  async testCombinations(array, tableCount, n) {
-    // console.log(array, tableCount, n);
-    let singles = selectN(n, array);
-    for (var i = 0; i < singles.length; i++) {
-      var columns = '"';
-      for (var j = 0; j < singles[i].length - 1; j++) {
-        columns += singles[i][j].columnName + '", "';
-      }
-      columns += singles[i][singles[i].length - 1].columnName + '"';
-      // console.log(columns);
-      let r = await this.executeSQLQuery(
-        "SELECT Count(*) as count FROM ( SELECT DISTINCT " +
-          columns +
-          " FROM " +
-          this.tableName +
-          ") as derived"
-      );
-      // console.log("count:", r[0]["count"]);
-      if (r[0]["count"] === tableCount) {
-        console.log("found candidate key!", columns);
-        for (var k = 0; k < singles[i].length; k++) {
-          array.splice(array.indexOf(singles[i][k]), 1);
+  checkSet(existing, t, tables) {
+    const liknessThreshold = 0.8;
+    // console.log(t);
+    // console.log(t.tableName);
+    let newSet = new Set();
+    for (let i = 0; i < t.foreignKeys.length; i++) {
+      // add referenced table.
+      // firstSet.add(t.foreignKeys[i].pkTable);
+      // console.log(t.foreignKeys[i]);
+      // return;
+      if (
+        testLikness(
+          t.foreignKeys[i].pkColumn.map(item => {
+            return item.columnName;
+          }),
+          t.foreignKeys[i].pointingOnColumn.map(item => {
+            return item.columnName;
+          })
+        ) > liknessThreshold
+      ) {
+        if (!existing.has(t.foreignKeys[i].pkTable)) {
+          existing.add(t.foreignKeys[i].pkTable);
+          newSet.add(
+            tables.find(item => {
+              return t.foreignKeys[i].pkTable === item.tableName;
+            })
+          );
         }
-        // console.log(singles[i]);
-        this.candidateKeys.push([...singles[i]]);
-        // restart this level with new array.
-        let possible = await this.testIfAnyCombinationIsPossible(
-          array,
-          tableCount
-        );
-        if (possible) {
-          await this.testCombinations(array, tableCount, n);
-        }
-        return;
       }
     }
-    if (n < array.length) {
-      await this.testCombinations(array, tableCount, n + 1);
-    }
-  }
-
-  async testIfAnyCombinationIsPossible(array, tableCount) {
-    if (array.length <= 0) {
-      return false;
-    }
-    var columns = '"';
-    for (var j = 0; j < array.length - 1; j++) {
-      columns += array[j].columnName + '", "';
-    }
-    columns += array[array.length - 1].columnName + '"';
-    // console.log(columns);
-    let r = await this.executeSQLQuery(
-      "SELECT Count(*) as count FROM ( SELECT DISTINCT " +
-        columns +
-        " FROM [" +
-        this.tableName +
-        "]) as derived"
-    );
-    if (r[0]["count"] === tableCount) {
-      return true;
-    }
-    // console.log("false");
-    return false;
-  }
-
-  async findForeignKeys(allTables) {
-    await mssql.connect(this.store.connection.databaseConfig);
-
-    this.foreignKeys = [];
-    let selectedTable = this;
-    // TODO make better solution
-    if (this.rowCount < 2) {
-      return;
-    }
-    // let allTables = this.props.selectedStore.connection.databaseStructure
-    //   .tables;
-    console.log("starting foreign key search");
-    for (let index in selectedTable.candidateKeys) {
-      let key = selectedTable.candidateKeys[index];
-      // for every table check if any set of columns contain this key.
-      // console.log(toJS(this.props.selectedStore.connection.databaseStructure));
-      // console.log(toJS(allTables));
-      for (let tableIndex in allTables) {
-        let table = allTables[tableIndex];
-        if (table.rowCount > 0 && table.tableName !== selectedTable.tableName) {
-          let possibleColumns = [];
-          // find number of columns
-          for (let keyIndex in key) {
-            let keyColumn = key[keyIndex];
-            let pos = [];
-            for (let columnIndex in table.columns) {
-              let column = table.columns[columnIndex];
-              // console.log(column);
-              if (column.dataType === keyColumn.dataType) {
-                pos.push({ ...column });
-              }
-            }
-            if (pos.length > 0) {
-              possibleColumns.push(pos);
-            }
-          }
-
-          if (possibleColumns.length === key.length) {
-            // eliminate the columns that it can't be before doing all iterations.
-            // console.log(possibleColumns);
-            let tests = 0;
-            let t = [];
-            for (let i = 0; i < possibleColumns.length; i++) {
-              let q = [];
-              for (let j = 0; j < possibleColumns[i].length; j++) {
-                if (!possibleColumns[i][j].isNull) {
-                  let r = await this.executeSQLQuery(
-                    'IF NOT EXISTS ( SELECT "' +
-                      possibleColumns[i][j].columnName +
-                      '" FROM [' +
-                      table.tableName +
-                      '] WHERE "' +
-                      possibleColumns[i][j].columnName +
-                      '" IS NOT NULL EXCEPT SELECT "' +
-                      key[i].columnName +
-                      '" FROM [' +
-                      selectedTable.tableName +
-                      "] ) SELECT 'exists' as res ELSE SELECT 'no does not exist' as res"
-                  );
-                  // console.log(r);
-                  tests += 1;
-                  if (r[0]["res"] === "exists") {
-                    q.push(possibleColumns[i][j]);
-                  }
-                }
-              }
-              if (q.length > 0) {
-                t.push(q);
-              } else {
-                break;
-              }
-            }
-            console.log("tested columns: ", tests);
-            // console.log(t);
-            if (t.length === key.length) {
-              // try the possibilities if every column found a match:
-              let perms = permutations(t);
-              console.log("have doubles", perms);
-              perms = removeDoubles(perms);
-              console.log("removed doubles", perms);
-              // console.log(perms.length);
-              for (let i = 0; i < perms.length; i++) {
-                if ((i + 1) % 500 === 0) {
-                  console.log(i);
-                }
-
-                // test
-                let r = await this.executeSQLQuery(
-                  "IF NOT EXISTS \n( SELECT\n " +
-                    this.getSQLColumnsFromList(perms[i]) +
-                    " FROM [" +
-                    table.tableName +
-                    "] WHERE\n " +
-                    this.getSQLNotNULLFromList(perms[i]) +
-                    " \nEXCEPT SELECT " +
-                    this.getSQLColumnsFromList(key) +
-                    " FROM [" +
-                    selectedTable.tableName +
-                    "] ) \nSELECT 'exists' as res ELSE SELECT 'not' as res"
-                );
-                // console.log(r);
-                if (r[0]["res"] === "exists") {
-                  // verify that the target table is not only null.
-
-                  this.foreignKeys.push({
-                    pointingOnColumn: key,
-                    pkColumn: perms[i],
-                    pkTable: table.tableName
-                  });
-                  // console.log(this.foreignKeys);
-                  console.log(
-                    "possibility found: ",
-                    this.tableName,
-                    this.getSQLColumnsFromList(key),
-                    "From:",
-                    table.tableName,
-                    this.getSQLColumnsFromList(perms[i])
-                  );
-                }
+    for (let i = 0; i < tables.length; i++) {
+      if (tables[i].foreignKeys && tables[i].shouldSave === true) {
+        for (let j = 0; j < tables[i].foreignKeys.length; j++) {
+          if (tables[i].foreignKeys[j].pkTable === t.tableName) {
+            if (
+              testLikness(
+                tables[i].foreignKeys[j].pkColumn.map(item => {
+                  return item.columnName;
+                }),
+                tables[i].foreignKeys[j].pointingOnColumn.map(item => {
+                  return item.columnName;
+                })
+              ) > liknessThreshold
+            ) {
+              if (!existing.has(tables[i].tableName)) {
+                existing.add(tables[i].tableName);
+                newSet.add(tables[i]);
               }
             }
           }
         }
       }
     }
-    this.saveData(this.asJson);
-    console.log("foreign done");
-  }
 
-  getSQLColumnsFromList(array) {
-    var columns = '"';
-    for (var j = 0; j < array.length - 1; j++) {
-      columns += array[j].columnName + '",\n "';
-    }
-    columns += array[array.length - 1].columnName + '"';
-    return columns;
-  }
+    newSet.forEach(item => {
+      this.checkSet(existing, item, tables);
+    }, this);
 
-  getSQLNotNULLFromList(array) {
-    var columns = '"';
-    for (var j = 0; j < array.length - 1; j++) {
-      columns += array[j].columnName + '" IS NOT NULL AND\n "';
-    }
-    columns += array[array.length - 1].columnName + '" IS NOT NULL';
-    return columns;
-  }
-
-  async executeSQLQuery(query, depth = 0) {
-    try {
-      // await mssql.connect(this.store.connection.databaseConfig);
-      // create Request object
-      var request = new mssql.Request();
-      const result = await request.query(query);
-      // console.log(result, query);
-      return result;
-    } catch (e) {
-      console.log(query);
-      console.log(e);
-      if (e.name === "ConnectionError" && depth < 4) {
-        console.log("trying again");
-        return await this.executeSQLQuery(query, depth + 1);
-      }
-    }
-  }
-
-  loadSavedData(id) {
-    const data = fileStore.get("table_" + id);
-    // console.log(data);
-    if (data) {
-      this.autoSave = false;
-      this.tableName = data.tableName;
-      this.columns = data.columns;
-      this.rowCount = data.rowCount;
-      this.shouldSave = data.shouldSave;
-      this.autoSave = true;
-      this.candidateKeys = data.candidateKeys;
-      this.foreignKeys = data.foreignKeys;
-    }
-  }
-
-  saveData(data) {
-    console.log("save");
-    // fileStore.set("selected", data);
-    // console.log("saveData");
-    // console.log(data, this.id);
-    try {
-      fileStore.set("table_" + this.id, data);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  @computed
-  get asJson() {
-    return {
-      tableName: this.tableName,
-      columns: this.columns,
-      rowCount: this.rowCount,
-      shouldSave: this.shouldSave,
-      candidateKeys: this.candidateKeys,
-      foreignKeys: this.foreignKeys
-    };
+    // for (let i = 0; i < newSet.size; i++) {
+    //   this.checkSet(existing, newSet[i], tables);
+    // }
+    // console.log(existing);
   }
 }
-
-// export class Column

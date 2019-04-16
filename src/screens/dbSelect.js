@@ -204,6 +204,14 @@ class DBSelectScreen extends Component {
         </div>
         <div>{this.renderConnections()}</div>
         {/* </header> */}
+        <p
+          onClick={() => {
+            console.log(this.props.connectionStore);
+            this.props.connectionStore.clearAllData();
+          }}
+        >
+          Delete all data
+        </p>
       </div>
     );
   }

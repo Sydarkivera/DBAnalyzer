@@ -244,7 +244,36 @@ class TablePreviewScreen extends Component {
   }
 
   render() {
-    console.log(this.props.selectedStore.table.foreignKeys);
+    // console.log(this.props.selectedStore.table.foreignKeys);
+
+    // sort out all foreign keys linking to this.
+    // console.log(this.props.selectedStore.connection.databaseStructure.tables);
+    this.props.selectedStore.connection.databaseStructure.tables.filter(
+      item => {
+        // console.log(item);
+        if (item.foreignKeys) {
+          var keys = item.foreignKeys.filter(fkey => {
+            return fkey.pkTable === this.props.selectedStore.table.tableName;
+          });
+          if (keys.length > 0) {
+            console.log(
+              keys.map(a => {
+                return (
+                  a.pkTable +
+                  ": " +
+                  a.pkColumn.map(pk => {
+                    return pk.columnName;
+                  })
+                );
+              }),
+              item.tableName
+            );
+          }
+        }
+        return true;
+      }
+    );
+
     return (
       <div className="DatabaseScreen">
         <div className="TopMenu">
@@ -276,7 +305,7 @@ class TablePreviewScreen extends Component {
           Found Candidate_keys:{" "}
           {this.props.selectedStore.table.candidateKeys
             .reduce((accumulator, item) => {
-              console.log(item.length, accumulator);
+              // console.log(item.length, accumulator);
               return (
                 accumulator +
                 "[" +

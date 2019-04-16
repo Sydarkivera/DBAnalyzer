@@ -172,17 +172,34 @@ export class ConnectionList {
     }
   };
 
+  clearAllData() {
+    fileStore.clear();
+  }
+
   loadSavedData = async () => {
     try {
       const data = fileStore.get("ConnectionStore");
       // console.log(data);
       // const connections = JSON.parse(data);
-      if (data !== null) {
+      if (data) {
         this.autoSave = false;
         for (let index in data) {
           this.connections.push(new Connection(this, data[index]));
         }
         this.autoSave = true;
+      } else {
+        // create default data
+        console.log("creating default databases");
+        let connection = this.createConnection();
+        connection.server = "10.170.70.5\\SQLREAL";
+        connection.database = "Winess4";
+        connection.username = "sa";
+        connection.password = "erido31.!2";
+        this.saveData(
+          this.connections.map(connection => {
+            return connection.id;
+          })
+        );
       }
     } catch (err) {
       console.error(err);
