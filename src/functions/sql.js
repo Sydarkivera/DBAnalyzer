@@ -31,7 +31,7 @@ export async function executeSQLQuery(query, depth = 0) {
     console.log(e);
     if (e.name === "ConnectionError" && depth < 4) {
       console.log("trying again");
-      return await this.executeSQLQuery(query, depth + 1);
+      return await executeSQLQuery(query, depth + 1);
     }
   }
 }

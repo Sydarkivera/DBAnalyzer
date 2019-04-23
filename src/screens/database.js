@@ -236,7 +236,7 @@ class DatabaseScreen extends Component {
       var s = 1;
       loadingLabel = (
         <div>
-          <p onClick={() => this.startAnalysis(6, true)}>
+          <p onClick={() => this.startAnalysis(0, false)}>
             Start analysis {step}
           </p>
           {structure.tablesToVerify.length > 0 ? (
@@ -267,20 +267,9 @@ class DatabaseScreen extends Component {
             ""
           )}
           {step >= s++ ? (
-            <div>
-              <p>
-                Tables with one column: {structure.numberOfTablesWithOneColumn}
-              </p>
-              <p>
-                {structure.tablesToVerify
-                  .filter(item => {
-                    return item.type !== "island";
-                  })
-                  .map(item => {
-                    return item.tables + ": " + item.reason;
-                  })}
-              </p>
-            </div>
+            <p>
+              Tables with one column: {structure.numberOfTablesWithOneColumn}
+            </p>
           ) : (
             ""
           )}
@@ -300,20 +289,7 @@ class DatabaseScreen extends Component {
           ) : (
             ""
           )}
-          {step >= s++ ? (
-            <div>
-              {structure.tablesToVerify
-                .filter(item => {
-                  return item.type === "island";
-                })
-                .map((item, i) => {
-                  return <p key={i}>{item.tables + ": " + item.reason}</p>;
-                })}
-              <p>Done</p>
-            </div>
-          ) : (
-            ""
-          )}
+          {step >= s++ ? <p>Done</p> : ""}
         </div>
       );
 

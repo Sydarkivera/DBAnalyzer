@@ -5,8 +5,6 @@ import { observer, inject } from "mobx-react";
 import "../App.css";
 import "./database.css";
 
-import { FaRegCircle, FaRegCheckCircle } from "react-icons/fa";
-
 const mssql = window.require("mssql");
 // const sql = window.require("mssql");
 
@@ -42,7 +40,6 @@ class TableVerificationScreen extends Component {
     this.state = {
       views: []
     };
-    console.log("ctor");
 
     props.selectedStore.connection.fetchDatabaseStrucutre();
 
@@ -51,142 +48,13 @@ class TableVerificationScreen extends Component {
     }, 10);
   }
 
-  async req(query) {
-    // create Request object
-    var request = new mssql.Request();
-    const result = await request.query(query);
-    return result;
-  }
-
   async loadAllData() {
     await this.loadTables();
-    await this.loadViews();
-    // this.loadProcedures();
-  }
-
-  async loadProcedures() {
-    let query = "SELECT * FROM sys.procedures";
-    await mssql.connect(this.props.selectedStore.connection.databaseConfig);
-    // create Request object
-    var request = new mssql.Request();
-    const result = await request.query(query);
-    console.log(result);
   }
 
   async loadTables() {
     this.tables = await this.props.selectedStore.connection.databaseStructure.fetchAllTables();
     this.loadingTables = false;
-  }
-
-  async loadViews() {
-    let query = "SELECT * FROM sys.views";
-    await mssql.connect(this.props.selectedStore.connection.databaseConfig);
-    // create Request object
-    var request = new mssql.Request();
-    const result = await request.query(query);
-    // console.log(result);
-    var res = [];
-    for (var i = 0; i < result.length; i++) {
-      let r = await this.req(
-        "select m.definition from sys.sql_modules m where m.object_id = " +
-          result[i]["object_id"]
-      );
-      // console.log(r);
-      res.push({
-        name: result[i].name,
-        object_id: result[i].object_id,
-        sql: r[0].definition
-      });
-    }
-    this.setState({ views: res });
-  }
-
-  selectTable(table) {
-    // console.log("select table:", tableName);
-    this.props.selectedStore.table = table;
-    this.props.history.push("/database/table/");
-    // console.log("push history");
-  }
-
-  selectView(view) {
-    console.log(view);
-  }
-
-  async loadCandidateKeys() {
-    const tables = this.props.selectedStore.connection.databaseStructure.tables;
-    // console.log(tables);
-    for (let key in tables) {
-      let table = tables[key];
-      if (/*!table.candidateKeys && */ table.rowCount > 0) {
-        await table.findCandidateKeys();
-        this.candidateProgress += 1;
-      }
-      // break;
-    }
-    console.log("done");
-  }
-
-  async loadForeignKeys() {
-    const tables = this.tables;
-    // console.log(tables);
-    for (let key in tables) {
-      let table = tables[key];
-      if (/*!table.candidateKeys && */ table.rowCount > 0) {
-        await table.findForeignKeys(tables);
-        this.foreignProgress += 1;
-      }
-      // break;
-    }
-    console.log("done");
-  }
-
-  async startAnalysis(start = 0, resume = false) {
-    var structure = this.props.selectedStore.connection.databaseStructure;
-    var a = 0;
-    // structure.step = 0;
-    if (!resume) {
-      structure.step = 1;
-      structure.tablesToVerify = [];
-    } else {
-      start = structure.step - 1;
-    }
-    if (start <= a++) {
-      await structure.analyseTableStructures();
-      structure.step += 1;
-    }
-    if (start <= a++) {
-      await structure.findNullColumns();
-      structure.step += 1;
-    }
-    if (start <= a++) {
-      await structure.findRemovableTablesBasedOnSize();
-      structure.step += 1;
-    }
-    if (start <= a++) {
-      await structure.findCandidateKeys();
-      structure.step += 1;
-    }
-    if (start <= a++) {
-      await structure.findForeignKeys();
-      structure.step += 1;
-    }
-    // if (start <= a++) {
-    // find all tables with no references of foreign keys
-
-    await structure.findIslands();
-    structure.step += 1;
-    // }
-  }
-
-  renderViews() {
-    return this.state.views.map((item, index) => {
-      return (
-        <div key={item.object_id}>
-          <p onClick={() => this.selectView(item)}>{item.name}</p>
-          <p>{item.sql}</p>
-        </div>
-      );
-    });
   }
 
   render() {

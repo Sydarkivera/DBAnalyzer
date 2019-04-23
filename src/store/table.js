@@ -56,9 +56,9 @@ export class Table {
   @action
   async loadColumnData() {
     // console.log(this.columns);
-    // if (this.columns.length > 0) {
-    //   return;
-    // }
+    if (this.columns.length > 0) {
+      return;
+    }
     await mssql.connect(this.store.connection.databaseConfig);
     // create Request object
     var request = new mssql.Request();
@@ -203,17 +203,7 @@ export class Table {
         column.dataType !== "xml" &&
         column.isNull === false
       ) {
-        // r = await this.executeSQLQuery(
-        //   "SELECT TOP(1) 'There is at least one non-NULL' AS note FROM \"" +
-        //     this.tableName +
-        //     '" WHERE "' +
-        //     column.columnName +
-        //     '" is NULL'
-        // );
-        // // console.log(r);
-        // if (r.length === 0 && column.dataType !== "text") {
         possibleColumns.push(column);
-        // }
       }
     }
 
@@ -222,14 +212,8 @@ export class Table {
     );
     // console.log(tcRes);
     var tableCount = tcRes[0]["count"];
-    // console.log(tableCount);
 
-    // Test all possible combinations:
-    // await this.testCombinations(possibleColumns, tableCount, 1);
-    // console.log("all combinations tested");
-    // console.log(this.candidateKeys);
     await this.testCombinationsAlternative(possibleColumns, tableCount);
-    // console.log("all combinations tested");
     this.saveData(this.asJson);
   }
 
@@ -273,67 +257,14 @@ export class Table {
           return item.columnName;
         })
       );
-      // console.log(toJS(this.candidateKeys));
-      // candidate key found
-      // remove these items and try again withouth them.
+
       let newArray = [...array];
       for (let i = 0; i < current.length; i++) {
         newArray = newArray.filter(item => {
           return item.columnName !== current[i].columnName;
         });
-        // index = newArray.indexOf(current[i]);
-        // if (index >= 0) {
-        //   newArray.splice(i, 1);
-        // }
       }
-      // console.log(
-      //   "rest:",
-      //   newArray.map(item => {
-      //     return item.columnName;
-      //   })
-      // );
       await this.testCombinationsAlternative(newArray, tableCount);
-    }
-  }
-
-  async testCombinations(array, tableCount, n) {
-    // console.log(array, tableCount, n);
-    let singles = selectN(n, array);
-    for (var i = 0; i < singles.length; i++) {
-      var columns = '"';
-      for (var j = 0; j < singles[i].length - 1; j++) {
-        columns += singles[i][j].columnName + '", "';
-      }
-      columns += singles[i][singles[i].length - 1].columnName + '"';
-      // console.log(columns);
-      let r = await executeSQLQuery(
-        "SELECT Count(*) as count FROM ( SELECT DISTINCT " +
-          columns +
-          " FROM " +
-          this.tableName +
-          ") as derived"
-      );
-      // console.log("count:", r[0]["count"]);
-      if (r[0]["count"] === tableCount) {
-        console.log("found candidate key!", columns);
-        for (var k = 0; k < singles[i].length; k++) {
-          array.splice(array.indexOf(singles[i][k]), 1);
-        }
-        // console.log(singles[i]);
-        this.candidateKeys.push([...singles[i]]);
-        // restart this level with new array.
-        let possible = await this.testIfAnyCombinationIsPossible(
-          array,
-          tableCount
-        );
-        if (possible) {
-          await this.testCombinations(array, tableCount, n);
-        }
-        return;
-      }
-    }
-    if (n < array.length) {
-      await this.testCombinations(array, tableCount, n + 1);
     }
   }
 

@@ -1,0 +1,14 @@
+.alignRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0px 10px;
+}
+
+.alignRow .left {
+  align-self: flex-start;
+}
+
+.alignRow .right {
+  align-self: flex-end;
+}
