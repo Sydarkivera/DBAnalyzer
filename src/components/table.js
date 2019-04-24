@@ -243,8 +243,12 @@ class Table extends Component {
               key.pkColumn.map(item => item.columnName)
             ) > 0.8
           ) {
+            console.log(
+              key.pointingOnColumn.map(item => item.columnName),
+              key.pkColumn.map(item => item.columnName)
+            );
             fk.push(
-              <p onClick={() => this.selectForeignKey(key)} key={key.pkTable}>
+              <p onClick={() => this.selectForeignKey(key)} key={i}>
                 {key.pkTable}
               </p>
             );

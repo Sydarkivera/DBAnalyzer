@@ -78,17 +78,21 @@ export function removeDoubles(array) {
 
 export function testLikness(one, two) {
   // console.log(one, two);
+  if (one.length !== two.length) {
+    return 0;
+  }
   let sum = 0;
   for (let key in one) {
     let word2 = one[key];
     let word1 = two[key];
     // test if the strings are the same.
     sum += distance(word1, word2);
+    sum += distance(word2, word1);
   }
-  return sum / one.length;
+  return (sum / one.length) * 0.5;
 }
 const adjustments = {
-  A: "E"
+  // A: "E"
   // A: "I",
   // A: "O",
   // A: "U",
@@ -141,6 +145,7 @@ function distance(a, b) {
   var b_flag = [];
   var search_range = Math.floor(Math.max(a_len, b_len) / 2) - 1;
   var minv = Math.min(a_len, b_len);
+  // console.log(minv);
 
   // Looking only within the search range, count and flag the matched pairs.
   var Num_com = 0;
@@ -231,3 +236,19 @@ function distance(a, b) {
   return weight;
 }
 // console.log(testLikness(["hello"], ["word"]));
+
+// console.log(
+//   testLikness(
+//     ["DOKUMENT_FK_ID", "INITARENDE_JN", "HISTORIK_JN"],
+//     ["DOKUMENTDOC_FK_ID", "INTERNET_JN", "INTRANET_JN"]
+//   )
+// );
+// console.log(
+//   testLikness(
+//     ["DOKUMENTDOC_FK_ID", "INTERNET_JN", "INTRANET_JN"],
+//     ["DOKUMENT_FK_ID", "INITARENDE_JN", "HISTORIK_JN"]
+//   )
+// );
+
+// console.log(testLikness(["HISTORIK_JN"], ["INTRANET_JN"]));
+// console.log(testLikness(["INTRANET_JN"], ["HISTORIK_JN"]));

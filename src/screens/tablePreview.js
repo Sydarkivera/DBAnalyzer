@@ -102,6 +102,7 @@ class TablePreviewScreen extends Component {
               this.popupTable
             )}
             highlightColumns={this.poppupColumns}
+            selectForeignKey={key => this.selectForeignKey(key)}
           />
         </div>
       );

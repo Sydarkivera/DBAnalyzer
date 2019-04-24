@@ -36,6 +36,8 @@ class DatabaseScreen extends Component {
   @observable numberOfTablesWithOneColumn = 0;
   @observable step = 0;
 
+  @observable searchText = "";
+
   constructor(props) {
     super(props);
 
@@ -140,6 +142,28 @@ class DatabaseScreen extends Component {
     console.log("done");
   }
 
+  async analyseIslands() {
+    var structure = this.props.selectedStore.connection.databaseStructure;
+    structure.tablesToVerify = structure.tablesToVerify.filter(item => {
+      if (item.type === "island" || item.type === "single") {
+        return false;
+      }
+      return true;
+    });
+    await structure.findIslands();
+  }
+
+  markAllAsSave() {
+    const tables = this.tables;
+    for (let key in tables) {
+      let table = tables[key];
+      if (/*!table.candidateKeys && */ table.rowCount > 0) {
+        table.shouldSave = true;
+      }
+      // break;
+    }
+  }
+
   async startAnalysis(start = 0, resume = false) {
     var structure = this.props.selectedStore.connection.databaseStructure;
     var a = 0;
@@ -194,11 +218,6 @@ class DatabaseScreen extends Component {
     const connection = this.props.selectedStore.connection;
     const structure = connection.databaseStructure;
     const step = structure.step;
-    // var numberOfTables = structure.numberOfNonEmptyTables;
-    // console.log(numberOfTables);
-    // var b = structure.numberOfEmptyTables;
-    // numberOfTables -= b;
-    // structure.tables.length - structure.numberOfEmptyTables;
 
     var loadingLabel = null;
     var allTables = null;
@@ -206,38 +225,6 @@ class DatabaseScreen extends Component {
     if (!connection.databaseStructure || connection.databaseStructure.loading) {
       loadingLabel = <p>Loading, please wait</p>;
     } else {
-      loadingLabel = (
-        <div>
-          <p>
-            Planned workflow: 1. load an initial analysis of the database. This
-            includes finding all relations and finding the tables likely to be
-            saved and likely to be removed. 2. Present the result to the user
-            and let the user approve it. 3. Present the cornercases for the user
-            and let the user make decisions based on it. 4. Present the final
-            content and let the user decide what to do with it.
-          </p>
-          <p>
-            Non empty tables:{" "}
-            {connection.databaseStructure.tables.length -
-              connection.databaseStructure.numberOfEmptyTables}
-          </p>
-          <p>
-            Number of empty tables:{" "}
-            {connection.databaseStructure.numberOfEmptyTables}
-          </p>
-          <p>
-            Total number of rows:{" "}
-            {connection.databaseStructure.numberOfRowsInTables}
-          </p>
-          <p onClick={() => this.loadCandidateKeys()}>
-            Load all candidate keys {this.candidateProgress}
-          </p>
-          <p onClick={() => this.loadForeignKeys()}>
-            Load all foreign keys {this.foreignProgress}
-          </p>
-        </div>
-      );
-
       var s = 1;
       loadingLabel = (
         <div>
@@ -250,9 +237,9 @@ class DatabaseScreen extends Component {
               return reducer;
             }, 0)}/{structure.numberOfNonEmptyTables}
           </p>
-          <p onClick={() => this.startAnalysis(0, false)}>
-            Start analysis {step}
-          </p>
+          <p onClick={() => this.startAnalysis(0, false)}>Start analysis</p>
+          <p onClick={() => this.analyseIslands()}>Find all islands</p>
+          <p onClick={() => this.markAllAsSave()}>Reset all removed</p>
           {structure.tablesToVerify.length > 0 ? (
             <p
               onClick={() => {
@@ -311,6 +298,16 @@ class DatabaseScreen extends Component {
             ""
           )}
           {step >= s++ ? <p>Done</p> : ""}
+          <div className="input-group">
+            <input
+              type="text"
+              name="Search"
+              required
+              value={this.searchText}
+              onChange={text => (this.searchText = text.target.value)}
+            />
+            <label className="floating-label">Search</label>
+          </div>
         </div>
       );
 
@@ -321,6 +318,15 @@ class DatabaseScreen extends Component {
         }
         return 1;
       });
+      if (this.searchText !== "") {
+        // console.log(this.searchText);
+        // console.log(tablesSorted.map(item => item.tableName));
+        tablesSorted = tablesSorted.filter(
+          item =>
+            item.tableName.toUpperCase().search(this.searchText.toUpperCase()) >
+            -1
+        );
+      }
       // console.log(tablesSorted);
       for (var i in tablesSorted) {
         let table = tablesSorted[i];

@@ -276,23 +276,38 @@ export class DatabaseStructure {
     let pointedOnNames = new Set();
     for (let key in this.tables) {
       let table = this.tables[key];
-      if (table.rowCount > 0) {
+      if (table.rowCount > 0 && table.shouldSave) {
         if (table.foreignKeys.length === 0) {
           emptyTables.push(table);
         } else {
+          var found = false;
           for (let i = 0; i < table.foreignKeys.length; i++) {
-            pointedOnNames.add(table.foreignKeys[i].pkTable);
+            if (
+              testLikness(
+                table.foreignKeys[i].pkColumn.map(item => item.columnName),
+                table.foreignKeys[i].pointingOnColumn.map(
+                  item => item.columnName
+                )
+              ) > 0.8
+            ) {
+              pointedOnNames.add(table.foreignKeys[i].pkTable);
+              found = true;
+            }
+          }
+          if (!found) {
+            emptyTables.push(table);
           }
         }
       }
     }
-    console.log(emptyTables.length);
-    let res = [];
+    // console.log(emptyTables.map(item => item.tableName));
+    // console.log(pointedOnNames);
+    let res = new Set();
     let sets = [];
     for (let emptyKey in emptyTables) {
       let emptyTable = emptyTables[emptyKey];
       if (!pointedOnNames.has(emptyTable.tableName)) {
-        res.push(emptyTable);
+        res.add(emptyTable.tableName);
         // emptyTable.shouldSave = false;
         this.tablesToVerify.push({
           reason: "Table with no relations",
@@ -301,23 +316,28 @@ export class DatabaseStructure {
         });
       }
     }
-    console.log(
-      "emptyTables",
-      res.map(item => {
-        return item.tableName;
-      })
-    );
+    // console.log(
+    //   "emptyTables",
+    //   res.map(item => {
+    //     return item.tableName;
+    //   })
+    // );
 
     // find disjoint sets.
 
     let t;
     let validTables = [];
     for (let i = 0; i < this.tables.length; i++) {
-      if (this.tables[i].rowCount > 1 && this.tables[i].shouldSave === true) {
+      if (
+        this.tables[i].rowCount > 0 &&
+        this.tables[i].shouldSave === true &&
+        !res.has(this.tables[i].tableName)
+      ) {
         validTables.push(this.tables[i]);
       }
     }
     while (validTables.length > 0) {
+      console.log(validTables.map(item => item.tableName));
       t = validTables[0];
       let firstSet = new Set();
       firstSet.add(t.tableName);
@@ -360,6 +380,13 @@ export class DatabaseStructure {
 
   checkSet(existing, t, tables) {
     const liknessThreshold = 0.8;
+    if (t.tableName === "SAMMANTRADEDOK") {
+      console.log(t.tableName);
+      console.log(t.tableName);
+      console.log(t.tableName);
+      console.log(t.tableName);
+      console.log(t.foreignKeys.length);
+    }
     // console.log(t);
     // console.log(t.tableName);
     let newSet = new Set();
@@ -378,7 +405,16 @@ export class DatabaseStructure {
           })
         ) > liknessThreshold
       ) {
+        if (t.tableName === "SAMMANTRADEDOK") {
+          console.log(t.foreignKeys[i]);
+        }
         if (!existing.has(t.foreignKeys[i].pkTable)) {
+          if (t.tableName === "SAMMANTRADEDOK") {
+            console.log(t.foreignKeys[i].pkTable);
+            console.log(existing);
+            console.log(newSet);
+            // console.log(t.foreignKeys[i]);
+          }
           existing.add(t.foreignKeys[i].pkTable);
           newSet.add(
             tables.find(item => {
