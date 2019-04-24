@@ -12,3 +12,8 @@
 .alignRow .right {
   align-self: flex-end;
 }
+
+.table {
+  margin: 5px;
+  margin-bottom: 30px;
+}

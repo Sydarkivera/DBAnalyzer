@@ -4,6 +4,9 @@ import { observable } from "mobx";
 import { observer, inject } from "mobx-react";
 import "../App.css";
 import "./database.css";
+import "./verification.css";
+import VerifyTable from "../components/verifyTable";
+import Table from "../components/table";
 
 const mssql = window.require("mssql");
 // const sql = window.require("mssql");
@@ -34,6 +37,8 @@ class TableVerificationScreen extends Component {
   @observable numberOfTablesWithOneColumn = 0;
   @observable step = 0;
 
+  @observable popupTable = undefined;
+
   constructor(props) {
     super(props);
 
@@ -57,10 +62,42 @@ class TableVerificationScreen extends Component {
     this.loadingTables = false;
   }
 
+  openPopup(tableName) {
+    console.log(tableName);
+    this.popupTable = tableName;
+  }
+
+  renderPopup() {
+    if (
+      !this.popupTable ||
+      !this.props.selectedStore.connection.databaseStructure.saveDataLoaded
+    ) {
+      return null;
+    } else {
+      return (
+        <div className="popup">
+          <p
+            onClick={() => {
+              this.popupTable = undefined;
+            }}
+          >
+            Close
+          </p>
+          <Table
+            table={this.props.selectedStore.connection.databaseStructure.findTable(
+              this.popupTable
+            )}
+          />
+        </div>
+      );
+    }
+  }
+
   render() {
     const connection = this.props.selectedStore.connection;
 
     // list tables that should be verified.
+    let id = 0;
 
     return (
       <div className="DatabaseScreen">
@@ -71,27 +108,51 @@ class TableVerificationScreen extends Component {
           </p>
         </div>
         <h3>Tables which are too small to be relevant</h3>
-        <p>
-          {connection.databaseStructure.tablesToVerify
-            .filter(item => {
-              return item.type !== "island";
-            })
-            .map(item => {
-              return (
-                (item.tables ? item.tables : item.tableName) +
-                ": " +
-                item.reason
-              );
-            })}
-        </p>
+        {connection.databaseStructure.tablesToVerify
+          .filter(item => {
+            return item.type !== "island" && item.type !== "single";
+          })
+          .map(item => {
+            return (
+              <VerifyTable
+                key={id++}
+                tables={item.tables}
+                reason={item.reason}
+                previewTable={name => this.openPopup(name)}
+              />
+            );
+          })}
+        <h3>Tables with no connections</h3>
+        {connection.databaseStructure.tablesToVerify
+          .filter(item => {
+            return item.type === "single";
+          })
+          .map((item, i) => {
+            return (
+              <VerifyTable
+                key={id++}
+                tables={item.tables}
+                reason={item.reason}
+                previewTable={name => this.openPopup(name)}
+              />
+            );
+          })}
         <h3>Tables with no relevant connections making them useless</h3>
         {connection.databaseStructure.tablesToVerify
           .filter(item => {
             return item.type === "island";
           })
           .map((item, i) => {
-            return <p key={i}>{item.tables + ": " + item.reason}</p>;
+            return (
+              <VerifyTable
+                key={id++}
+                tables={item.tables}
+                reason={item.reason}
+                previewTable={name => this.openPopup(name)}
+              />
+            );
           })}
+        {this.renderPopup()}
       </div>
     );
   }

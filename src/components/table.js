@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
-import { observable, toJS } from "mobx";
+import { observable } from "mobx";
 import "./table.css";
 // import "./tablePreview.css";
 
@@ -15,6 +15,8 @@ class Table extends Component {
   @observable start = 0;
   @observable interval = 30;
   @observable numberOfRows = 0;
+
+  @observable displayNullColumns = false;
   // @observable end = 30;
 
   allowData = true;
@@ -103,6 +105,7 @@ class Table extends Component {
 
   displayNextRows = () => {
     this.start += this.interval;
+    this.data = [];
     this.getInitialData();
   };
   displayPrevRows = () => {
@@ -110,6 +113,7 @@ class Table extends Component {
     if (this.start < 0) {
       this.start = 0;
     }
+    this.data = [];
     this.getInitialData();
   };
 
@@ -141,28 +145,35 @@ class Table extends Component {
           fk.push(struct.foreign_keys[i].referenceTable);
         }
       }
-      headerItems.push(
-        <th className="preview-table-item" key={struct.columnName}>
-          {struct.columnName}
-          <br key={1} />
-          {struct.dataType}
-          {pk}
-          {fk}
-        </th>
-      );
+      // console.log(struct);
+      // console.log(struct.isNull);
+      if (this.displayNullColumns || !struct.isNull) {
+        headerItems.push(
+          <th className="preview-table-item" key={struct.columnName}>
+            {struct.columnName}
+            <br key={1} />
+            {struct.dataType}
+            {pk}
+            {fk}
+          </th>
+        );
+      }
     }
     // return null;
     if (this.data.length > 0) {
-      // console.log(toJS(this.props.table.candidateKeys));
       var data = [];
       for (let index in this.data) {
         var rowContent = [];
         for (let i in this.data[index]) {
-          rowContent.push(
-            <td className="preview-table-item" key={i}>
-              {this.data[index][i]}
-            </td>
-          );
+          let struct = structure[i];
+
+          if (this.displayNullColumns || !struct.isNull) {
+            rowContent.push(
+              <td className="preview-table-item" key={i}>
+                {this.data[index][i]}
+              </td>
+            );
+          }
         }
         data.push(
           <tr key={index} className="preview-table-row">
@@ -217,6 +228,18 @@ class Table extends Component {
           ) : (
             <p />
           )}
+          <p>
+            Display null columns:{" "}
+            <input
+              name="isGoing"
+              type="checkbox"
+              checked={this.displayNullColumns}
+              onChange={val => {
+                this.displayNullColumns = val.target.checked;
+                // console.log(this.displayNullColumns);
+              }}
+            />
+          </p>
           {this.start + this.interval <= this.numberOfRows ? (
             <p className="left" onClick={this.displayNextRows}>
               Next rows

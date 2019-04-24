@@ -194,6 +194,11 @@ class DatabaseScreen extends Component {
     const connection = this.props.selectedStore.connection;
     const structure = connection.databaseStructure;
     const step = structure.step;
+    // var numberOfTables = structure.numberOfNonEmptyTables;
+    // console.log(numberOfTables);
+    // var b = structure.numberOfEmptyTables;
+    // numberOfTables -= b;
+    // structure.tables.length - structure.numberOfEmptyTables;
 
     var loadingLabel = null;
     var allTables = null;
@@ -236,6 +241,15 @@ class DatabaseScreen extends Component {
       var s = 1;
       loadingLabel = (
         <div>
+          <p>
+            Tables remaning saved:{" "}
+            {structure.tables.reduce((reducer, item) => {
+              if (item.shouldSave && item.rowCount > 0) {
+                return reducer + 1;
+              }
+              return reducer;
+            }, 0)}/{structure.numberOfNonEmptyTables}
+          </p>
           <p onClick={() => this.startAnalysis(0, false)}>
             Start analysis {step}
           </p>
@@ -245,23 +259,28 @@ class DatabaseScreen extends Component {
                 this.props.history.push("/database/verification");
               }}
             >
-              Verify tables {structure.tablesToVerify.length}
+              Verify tables{" "}
+              {structure.tablesToVerify.reduce((reducer, item) => {
+                return reducer + item.tables.length;
+              }, 0)}
             </p>
           ) : (
             ""
           )}
           {step >= s++ ? (
             <p>
-              Tables Structure Analysed: {structure.tableStructureLoaded}/{structure
-                .tables.length - structure.numberOfEmptyTables}
+              Tables Structure Analysed: {structure.tableStructureLoaded}/{
+                structure.numberOfNonEmptyTables
+              }
             </p>
           ) : (
             ""
           )}
           {step >= s++ ? (
             <p>
-              Tables null checks: {structure.columnsCheckedFoNull}/{structure
-                .tables.length - structure.numberOfEmptyTables}
+              Tables null checks: {structure.columnsCheckedFoNull}/{
+                structure.numberOfNonEmptyTables
+              }
             </p>
           ) : (
             ""
@@ -275,16 +294,18 @@ class DatabaseScreen extends Component {
           )}
           {step >= s++ ? (
             <p>
-              Loaded candidatekeys: {structure.tableCandidateKeysLoaded}/{structure
-                .tables.length - structure.numberOfEmptyTables}
+              Loaded candidatekeys: {structure.tableCandidateKeysLoaded}/{
+                structure.numberOfNonEmptyTables
+              }
             </p>
           ) : (
             ""
           )}
           {step >= s++ ? (
             <p>
-              Loaded foreign keys: {structure.tableForeignKeysLoaded}/{structure
-                .tables.length - structure.numberOfEmptyTables}
+              Loaded foreign keys: {structure.tableForeignKeysLoaded}/{
+                structure.numberOfNonEmptyTables
+              }
             </p>
           ) : (
             ""

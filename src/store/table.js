@@ -139,11 +139,12 @@ export class Table {
     }
     // console.log(data);
     this.columns = data;
+    await this.loadNullColumns();
   }
 
   async loadNullColumns() {
     for (let i in this.columns) {
-      console.log(i, this.columns.length, this.columns[i]);
+      // console.log(i, this.columns.length);
       var column = this.columns[i];
       const excluded = ["image"];
       column["isNull"] = false;
@@ -181,6 +182,7 @@ export class Table {
         }
       }
     }
+    this.saveData(this.asJson);
   }
 
   async findCandidateKeys() {

@@ -40,6 +40,16 @@ export class DatabaseStructure {
     );
   }
 
+  findTable(tableName) {
+    // await this.fetchAllTables();
+    return this.connection.databaseStructure.tables.find(item => {
+      if (item.tableName === tableName) {
+        return true;
+      }
+      return false;
+    });
+  }
+
   getTable(tableId) {
     if (this.tables.length === 0) {
       let table = new Table(this, tableId);
@@ -175,6 +185,17 @@ export class DatabaseStructure {
     }
     return num;
   }
+  @computed
+  get numberOfNonEmptyTables() {
+    let num = 0;
+    for (let index in this.tables) {
+      let table = this.tables[index];
+      if (table.rowCount > 0) {
+        num += 1;
+      }
+    }
+    return num;
+  }
 
   @computed
   get numberOfRowsInTables() {
@@ -203,7 +224,7 @@ export class DatabaseStructure {
     for (let key in this.tables) {
       let table = this.tables[key];
       if (table.rowCount > 0) {
-        await table.loadNullColumns();
+        // await table.loadNullColumns();
         this.columnsCheckedFoNull += 1;
       }
     }
@@ -272,7 +293,12 @@ export class DatabaseStructure {
       let emptyTable = emptyTables[emptyKey];
       if (!pointedOnNames.has(emptyTable.tableName)) {
         res.push(emptyTable);
-        emptyTable.shouldSave = false;
+        // emptyTable.shouldSave = false;
+        this.tablesToVerify.push({
+          reason: "Table with no relations",
+          tables: [emptyTable.tableName],
+          type: "single"
+        });
       }
     }
     console.log(
