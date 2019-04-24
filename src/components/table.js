@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
 import { observable } from "mobx";
 import "./table.css";
+import { testLikness } from "../functions/permutations";
 // import "./tablePreview.css";
 
 const mssql = window.require("mssql");
@@ -17,6 +18,8 @@ class Table extends Component {
   @observable numberOfRows = 0;
 
   @observable displayNullColumns = false;
+
+  @observable highlight = [];
   // @observable end = 30;
 
   allowData = true;
@@ -97,6 +100,11 @@ class Table extends Component {
 
       // console.log(data);
       this.data = data;
+      if (
+        !this.props.selectedStore.connection.databaseStructure.saveDataLoaded
+      ) {
+        this.props.selectedStore.connection.databaseStructure.fetchAllTables();
+      }
     } catch (err) {
       console.log(err);
     }
@@ -117,6 +125,92 @@ class Table extends Component {
     this.getInitialData();
   };
 
+  selectForeignKey(item) {
+    if (this.props.selectForeignKey) {
+      this.props.selectForeignKey(item);
+    } else {
+      console.log(item.pkTable, item.table);
+    }
+  }
+
+  highlightColumns(columnName) {
+    if (this.props.highlightColumns) {
+      if (
+        this.props.highlightColumns.find(item => {
+          return item.columnName === columnName;
+        })
+      ) {
+        return "highlight";
+      }
+    }
+    if (this.highlight.length > 0) {
+      if (
+        this.highlight.find(item => {
+          return item.columnName === columnName;
+        })
+      ) {
+        return "highlight-other";
+      }
+    }
+    return "";
+  }
+
+  enterFK = item => {
+    this.highlight = item.pkColumn;
+  };
+
+  leaveFK = item => {
+    this.highlight = [];
+  };
+
+  renderForeignKeysPointingOnThisTable() {
+    if (this.props.selectedStore.connection.databaseStructure.saveDataLoaded) {
+      // find all foreign keys pointing on this.
+      var linkingTables = this.props.selectedStore.connection.databaseStructure.tables.reduce(
+        (reducer, table) => {
+          var keys = table.foreignKeys.filter(item => {
+            return (
+              this.props.table.tableName === item.pkTable &&
+              testLikness(
+                item.pointingOnColumn.map(item => item.columnName),
+                item.pkColumn.map(item => item.columnName)
+              ) > 0.8
+            );
+          });
+          // console.log(keys);
+          if (keys.length > 0) {
+            return [
+              ...reducer,
+              ...keys.map(item => {
+                return { ...item, table: table.tableName };
+              })
+            ];
+          }
+          return reducer;
+        },
+        []
+      );
+      // console.log(linkingTables.map(item => item.table));
+      return (
+        <div>
+          {linkingTables.map(item => {
+            return (
+              <p
+                key={item.table}
+                onMouseEnter={() => this.enterFK(item)}
+                onMouseLeave={() => this.leaveFK(item)}
+                onClick={() => this.selectForeignKey(item)}
+              >
+                {item.table}: {item.pointingOnColumn.map(i => i.columnName)}
+              </p>
+            );
+          })}
+        </div>
+      );
+    }
+    return null;
+  }
+
   renderData() {
     if (!this.props.table) {
       return null;
@@ -130,31 +224,58 @@ class Table extends Component {
     var headerItems = [];
     for (let index in structure) {
       let struct = structure[index];
-      let pk = null;
-      if (struct.primaryKey) {
-        pk = [<br key={2} />, "PK"];
-      }
+      // let pk = null;
+      // if (struct.primaryKey) {
+      //   pk = [<br key={2} />, "PK"];
+      // }
       let fk = null;
-      if (struct.foreign_keys.length > 0) {
-        fk = [
-          <br key={3} />,
-          struct.foreign_keys.length + " FK ",
-          <br key={4} />
-        ];
-        for (let i in struct.foreign_keys) {
-          fk.push(struct.foreign_keys[i].referenceTable);
+      if (this.props.table.foreignKeys.length > 0) {
+        fk = [<p key={0}>ForeignKeys:</p>];
+        for (let i = 0; i < this.props.table.foreignKeys.length; i++) {
+          let key = this.props.table.foreignKeys[i];
+          // console.log(key);
+          if (
+            key.pointingOnColumn.find(item => {
+              return struct.columnName === item.columnName;
+            }) &&
+            testLikness(
+              key.pointingOnColumn.map(item => item.columnName),
+              key.pkColumn.map(item => item.columnName)
+            ) > 0.8
+          ) {
+            fk.push(
+              <p onClick={() => this.selectForeignKey(key)} key={key.pkTable}>
+                {key.pkTable}
+              </p>
+            );
+          }
+          // fk.push(<p>FK: {key.pkTable}</p>);
         }
       }
+      // if (struct.foreign_keys.length > 0) {
+      //   fk = [
+      //     <br key={3} />,
+      //     struct.foreign_keys.length + " FK ",
+      //     <br key={4} />
+      //   ];
+      //   for (let i in struct.foreign_keys) {
+      //     fk.push(struct.foreign_keys[i].referenceTable);
+      //   }
+      // }
       // console.log(struct);
       // console.log(struct.isNull);
       if (this.displayNullColumns || !struct.isNull) {
         headerItems.push(
-          <th className="preview-table-item" key={struct.columnName}>
+          <th
+            className={
+              "preview-table-item " + this.highlightColumns(struct.columnName)
+            }
+            key={struct.columnName}
+          >
             {struct.columnName}
             <br key={1} />
             {struct.dataType}
-            {pk}
-            {fk}
+            {fk && fk.length > 1 ? fk : null}
           </th>
         );
       }
@@ -220,6 +341,7 @@ class Table extends Component {
           )}{" "}
           of {this.props.table ? this.props.table.rowCount : ""}
         </p>
+        {this.renderForeignKeysPointingOnThisTable()}
         <div className="alignRow">
           {this.start > 0 ? (
             <p className="right" onClick={this.displayPrevRows}>

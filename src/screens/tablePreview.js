@@ -16,12 +16,16 @@ class TablePreviewScreen extends Component {
 
   @observable start = 0;
   @observable interval = 30;
+
+  @observable popupTable = undefined;
+  @observable poppupColumns = [];
   // @observable end = 30;
 
   allowData = true;
 
-  // constructor() {
-  // super();
+  // constructor(props) {
+  // super(props);
+  // props.selectedStore.connection.databaseStructure.fetchAllTables();
   // setTimeout(() => this.getInitialData(), 1000);
   // }
 
@@ -69,36 +73,71 @@ class TablePreviewScreen extends Component {
     this.getInitialData();
   };
 
+  selectForeignKey(key) {
+    // display popup with new table. Or let the table
+    if (!key.table) {
+      this.popupTable = key.pkTable;
+      this.poppupColumns = key.pkColumn;
+    } else {
+      this.popupTable = key.table;
+      this.poppupColumns = key.pointingOnColumn;
+    }
+  }
+
+  renderPopup() {
+    if (!this.popupTable) {
+      return null;
+    } else {
+      return (
+        <div className="popup">
+          <p
+            onClick={() => {
+              this.popupTable = undefined;
+            }}
+          >
+            Close
+          </p>
+          <Table
+            table={this.props.selectedStore.connection.databaseStructure.findTable(
+              this.popupTable
+            )}
+            highlightColumns={this.poppupColumns}
+          />
+        </div>
+      );
+    }
+  }
+
   render() {
     // console.log(this.props.selectedStore.table.foreignKeys);
 
     // sort out all foreign keys linking to this.
     // console.log(this.props.selectedStore.connection.databaseStructure.tables);
-    this.props.selectedStore.connection.databaseStructure.tables.filter(
-      item => {
-        // console.log(item);
-        if (item.foreignKeys) {
-          var keys = item.foreignKeys.filter(fkey => {
-            return fkey.pkTable === this.props.selectedStore.table.tableName;
-          });
-          if (keys.length > 0) {
-            console.log(
-              keys.map(a => {
-                return (
-                  a.pkTable +
-                  ": " +
-                  a.pkColumn.map(pk => {
-                    return pk.columnName;
-                  })
-                );
-              }),
-              item.tableName
-            );
-          }
-        }
-        return true;
-      }
-    );
+    // this.props.selectedStore.connection.databaseStructure.tables.filter(
+    //   item => {
+    //     // console.log(item);
+    //     if (item.foreignKeys) {
+    //       var keys = item.foreignKeys.filter(fkey => {
+    //         return fkey.pkTable === this.props.selectedStore.table.tableName;
+    //       });
+    //       if (keys.length > 0) {
+    //         console.log(
+    //           keys.map(a => {
+    //             return (
+    //               a.pkTable +
+    //               ": " +
+    //               a.pkColumn.map(pk => {
+    //                 return pk.columnName;
+    //               })
+    //             );
+    //           }),
+    //           item.tableName
+    //         );
+    //       }
+    //     }
+    //     return true;
+    //   }
+    // );
 
     return (
       <div className="DatabaseScreen">
@@ -117,56 +156,11 @@ class TablePreviewScreen extends Component {
         </div>
         <p onClick={() => this.findCandidateKeys()}>Find candidate keys</p>
         <p onClick={() => this.findForeignKeys()}>Find foreign keys</p>
-        <p>
-          Found Candidate_keys:{" "}
-          {this.props.selectedStore.table.candidateKeys
-            .reduce((accumulator, item) => {
-              // console.log(item.length, accumulator);
-              return (
-                accumulator +
-                "[" +
-                item
-                  .reduce((accumulator, i) => {
-                    // console.log(i);
-                    return accumulator + "'" + i.columnName + "', ";
-                  }, "")
-                  .slice(0, -2) +
-                "], "
-              );
-            }, "")
-            .slice(0, -2)}
-        </p>
-        <p>
-          Found Foreign_keys:{" "}
-          {this.props.selectedStore.table.foreignKeys
-            ? this.props.selectedStore.table.foreignKeys
-                .reduce((accumulator, item) => {
-                  // console.log(item, accumulator);
-                  return (
-                    accumulator +
-                    "{pkTable: " +
-                    item.pkTable +
-                    ", pkColumns: [" +
-                    item.pkColumn
-                      .reduce((accumulator, i) => {
-                        // console.log(i);
-                        return accumulator + "'" + i.columnName + "', ";
-                      }, "")
-                      .slice(0, -2) +
-                    "], sourceColumn: [" +
-                    item.pointingOnColumn
-                      .reduce((accumulator, i) => {
-                        // console.log(i);
-                        return accumulator + "'" + i.columnName + "', ";
-                      }, "")
-                      .slice(0, -2) +
-                    "]}, "
-                  );
-                }, "")
-                .slice(0, -2)
-            : ""}
-        </p>
-        <Table table={this.props.selectedStore.table} />
+        <Table
+          table={this.props.selectedStore.table}
+          selectForeignKey={key => this.selectForeignKey(key)}
+        />
+        {this.renderPopup()}
       </div>
     );
   }

@@ -1,10 +1,10 @@
 .popup {
-  position: absolute;
+  position: fixed;
   top: 10%;
   left: 10%;
   width: 80%;
   height: 80%;
-  background-color: red;
-  /* color: red; */
+  background-color: rgb(49, 70, 82);
   display: block;
+  overflow: scroll;
 }
