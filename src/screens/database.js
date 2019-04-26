@@ -237,6 +237,7 @@ class DatabaseScreen extends Component {
               return reducer;
             }, 0)}/{structure.numberOfNonEmptyTables}
           </p>
+          <p>{structure.tables.length}</p>
           <p onClick={() => this.startAnalysis(0, false)}>Start analysis</p>
           <p onClick={() => this.analyseIslands()}>Find all islands</p>
           <p onClick={() => this.markAllAsSave()}>Reset all removed</p>
