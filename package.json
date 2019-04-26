@@ -23,7 +23,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "electron": "electron ."
+    "electron": "electron .",
+    "prebuild_linux": "yarn build",
+    "build_linux": "electron-packager ."
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -35,10 +37,11 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "electron": "^4.0.4",
     "concurrently": "^3.6.0",
     "cross-env": "^5.2.0",
+    "electron": "^4.0.4",
+    "electron-packager": "^13.1.1",
     "wait-on": "^3.2.0"
   },
-  "main": "src/electron-starter.js"
+  "main": "public/electron.js"
 }

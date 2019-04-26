@@ -1,0 +1,34 @@
+.TopMenu {
+  display: flex;
+  justify-content: space-between;
+  background-color: rgb(49, 70, 82);
+}
+
+.TopMenu p,
+a {
+  margin: 10px;
+}
+
+.TopMenu a {
+  color: lightblue;
+}
+
+.table-list {
+}
+
+.table-list .table-item {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0px 10px;
+}
+
+.table-list .table-item p {
+  padding: 0;
+  margin: 0;
+}
+
+.table-item-name {
+  display: flex;
+}

@@ -1,0 +1,92 @@
+.connection-card {
+  background-color: #353c4b;
+  padding: 10px;
+  margin: 0 5px;
+  margin-bottom: 5px;
+  /* width: 100%; */
+}
+
+.card-title {
+  font-size: 1em;
+  text-align: left;
+  margin: 0;
+}
+
+.card-content {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 10px;
+}
+
+.card-content p {
+  font-size: 0.6em;
+  margin: 0;
+  padding: 0;
+}
+
+.card-content .button {
+  background-color: #3d475c;
+  margin: 5px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.button-danger {
+  color: red;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px;
+}
+
+input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  outline: none;
+  display: block;
+  width: 100%;
+  padding: 7px;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  background: transparent;
+  margin-bottom: 10px;
+  font: 16px Arial, Helvetica, sans-serif;
+  height: 45px;
+  color: white;
+}
+
+.floating-label {
+  position: relative;
+  pointer-events: none;
+  left: 6px;
+  top: -43px;
+  transition: 0.2s ease all;
+}
+
+input[type="text"]:focus ~ .floating-label,
+input[type="text"]:not(:focus):valid ~ .floating-label {
+  top: -70px;
+  /* bottom: 10px; */
+  /* left: 10px; */
+  font-size: 11px;
+  opacity: 1;
+}
+
+.input-group {
+  width: 100%;
+  text-align: left;
+  margin: 0;
+  padding: 0;
+}
+
+.center-flex {
+  align-self: center;
+  justify-content: center;
+  text-align: center;
+  display: block;
+}
