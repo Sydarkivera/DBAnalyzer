@@ -9,6 +9,7 @@ import TableVerificationScreen from "./screens/verification";
 
 class App extends Component {
   render() {
+    console.log(this.props);
     return (
       <div className="App">
         <Switch>
@@ -19,6 +20,7 @@ class App extends Component {
             path="/database/verification/"
             component={TableVerificationScreen}
           />
+          <Route path="/" component={DBSelectScreen} />
         </Switch>
       </div>
     );
