@@ -201,6 +201,12 @@ export class ConnectionList {
         connection.database = "Diabas-RegionB";
         connection.username = "sa";
         connection.password = "erido31.!2";
+
+        connection = this.createConnection();
+        connection.server = "10.170.70.7\\SQLREAL";
+        connection.database = "Arkiv60";
+        connection.username = "sa";
+        connection.password = "erido31.!2";
         this.saveData(
           this.connections.map(connection => {
             return connection.id;

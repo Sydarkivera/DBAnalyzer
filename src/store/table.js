@@ -207,6 +207,7 @@ export class Table {
         column.dataType !== "image" &&
         column.dataType !== "text" &&
         column.dataType !== "xml" &&
+        column.dataType !== "ntext" &&
         column.isNull === false
       ) {
         possibleColumns.push(column);
