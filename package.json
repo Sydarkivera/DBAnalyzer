@@ -27,7 +27,9 @@
     "prebuild_macos": "yarn build",
     "build_macos": "electron-packager . DBAnalyser --overwrite",
     "prebuild_linux": "yarn build",
-    "build_linux": "electron-packager . DBAnalyser --overwrite --platform=linux"
+    "build_linux": "electron-packager . DBAnalyser --overwrite --platform=linux",
+    "prebuild_win": "yarn build",
+    "build_win": "electron-packager . DBAnalyser --overwrite --platform=win32"
   },
   "eslintConfig": {
     "extends": "react-app"
