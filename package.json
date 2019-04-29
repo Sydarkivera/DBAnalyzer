@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "custom-react-scripts": "^0.2.2",
+    "electron-is-dev": "^1.1.0",
     "electron-reload": "^1.4.0",
     "electron-store": "^2.0.0",
     "mobx": "^5.9.0",

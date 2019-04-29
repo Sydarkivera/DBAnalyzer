@@ -1,4 +1,5 @@
 const electron = require("electron");
+const isDev = require("electron-is-dev");
 
 // require("electron-reload")(__dirname);
 // Module to control application life.
@@ -6,7 +7,7 @@ const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
 
-// const path = require("path");
+const path = require("path");
 // const url = require("url");
 
 // const mssql = require("mssql");
@@ -25,7 +26,11 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  mainWindow.loadURL("http://localhost:3000");
+  if (isDev) {
+    mainWindow.loadURL("http://localhost:3000");
+  } else {
+    mainWindow.loadURL(`file://${path.join(__dirname, "./index.html")}`);
+  }
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();

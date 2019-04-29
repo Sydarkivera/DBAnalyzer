@@ -4,6 +4,7 @@ import { observable } from "mobx";
 import "./table.css";
 import { testLikness } from "../functions/permutations";
 import { FaRegCircle, FaRegCheckCircle } from "react-icons/fa";
+import ShouldSaveButton from "./shouldSaveButton";
 // import "./tablePreview.css";
 
 const mssql = window.require("mssql");
@@ -394,8 +395,12 @@ class Table extends Component {
           )}{" "}
           of {this.props.table ? this.props.table.rowCount : ""}
         </p>
+        <ShouldSaveButton
+          shouldSave={this.props.table.shouldSave}
+          onChange={val => (this.props.table.shouldSave = val)}
+        />
         {this.renderForeignKeysPointingOnThisTable()}
-        {this.renderSaveButton(this.props.table)}
+
         <div className="alignRow">
           {this.start > 0 ? (
             <p className="right" onClick={this.displayPrevRows}>

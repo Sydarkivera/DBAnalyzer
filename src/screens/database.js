@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { observable } from "mobx";
 import { observer, inject } from "mobx-react";
+import ShouldSaveButton from "../components/shouldSaveButton";
 import "../App.css";
 import "./database.css";
 
@@ -158,7 +159,7 @@ class DatabaseScreen extends Component {
     for (let key in tables) {
       let table = tables[key];
       if (/*!table.candidateKeys && */ table.rowCount > 0) {
-        table.shouldSave = true;
+        table.shouldSave = 1;
       }
       // break;
     }
@@ -322,7 +323,6 @@ class DatabaseScreen extends Component {
           </p>
           <p>Number of empty tables: {structure.numberOfEmptyTables}</p>
           <p onClick={() => this.analyseIslands()}>Find all islands</p>
-          <p onClick={() => this.markAllAsSave()}>Reset all removed</p>
           {structure.tablesToVerify.length > 0 ? (
             <p
               onClick={() => {
@@ -375,7 +375,10 @@ class DatabaseScreen extends Component {
           tableItems.push(
             <div key={i} className="table-item">
               <div className="table-item-name">
-                {this.renderSaveButton(table)}
+                <ShouldSaveButton
+                  shouldSave={table.shouldSave}
+                  onChange={val => (table.shouldSave = val)}
+                />
                 <p onClick={() => this.selectTable(table)}>{table.tableName}</p>
               </div>
               <p>rows: {table.rowCount}</p>

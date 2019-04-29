@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { observer, inject } from "mobx-react";
+import ShouldSaveButton from "./shouldSaveButton";
 // import { observable } from "mobx";
 // import "./table.css";
 import "./verifyTable.css";
@@ -49,6 +50,9 @@ class VerifyTable extends Component {
                 //   )
                 // );
                 // return null;
+                let table = this.props.selectedStore.connection.databaseStructure.findTable(
+                  item
+                );
                 return (
                   <div className="tableRow" key={i}>
                     <p
@@ -58,13 +62,10 @@ class VerifyTable extends Component {
                     >
                       {item}
                     </p>
-                    {this.props.selectedStore.connection.databaseStructure.findTable(
-                      item
-                    ).shouldSave ? (
-                      <FaRegCheckCircle onClick={() => this.saveToggle(item)} />
-                    ) : (
-                      <FaRegCircle onClick={() => this.saveToggle(item)} />
-                    )}
+                    <ShouldSaveButton
+                      shouldSave={table.shouldSave}
+                      onChange={val => (table.shouldSave = val)}
+                    />
                   </div>
                 );
               })
