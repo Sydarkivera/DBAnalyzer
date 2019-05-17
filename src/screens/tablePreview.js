@@ -21,7 +21,7 @@ class TablePreviewScreen extends Component {
   @observable poppupColumns = [];
   // @observable end = 30;
 
-  allowData = true;
+  allowData = false;
 
   // constructor(props) {
   // super(props);

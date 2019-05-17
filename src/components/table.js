@@ -24,7 +24,7 @@ class Table extends Component {
   @observable highlight = [];
   // @observable end = 30;
 
-  allowData = true;
+  allowData = false;
 
   constructor() {
     super();
@@ -389,11 +389,9 @@ class Table extends Component {
     return (
       <div className="table">
         <p>
-          Displaying {this.start}-{Math.min(
-            this.start + this.interval,
-            this.props.table.rowCount
-          )}{" "}
-          of {this.props.table ? this.props.table.rowCount : ""}
+          Displaying {this.start}-
+          {Math.min(this.start + this.interval, this.props.table.rowCount)} of{" "}
+          {this.props.table ? this.props.table.rowCount : ""}
         </p>
         <ShouldSaveButton
           shouldSave={this.props.table.shouldSave}

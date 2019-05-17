@@ -214,33 +214,6 @@ class DatabaseScreen extends Component {
     });
   }
 
-  renderSaveButton(table) {
-    switch (table.shouldSave) {
-      case 0:
-        return (
-          <FaRegCircle
-            style={{ color: "red" }}
-            onClick={() => (table.shouldSave = 1)}
-          />
-        );
-      case 1:
-        return (
-          <FaRegCheckCircle
-            style={{ color: "yellow" }}
-            onClick={() => (table.shouldSave = 2)}
-          />
-        );
-      case 2:
-        return (
-          <FaRegCheckCircle
-            style={{ color: "green" }}
-            onClick={() => (table.shouldSave = 0)}
-          />
-        );
-      default:
-    }
-  }
-
   renderProgress() {
     const connection = this.props.selectedStore.connection;
     const structure = connection.databaseStructure;

@@ -189,29 +189,6 @@ export class ConnectionList {
         this.autoSave = true;
       } else {
         // create default data
-        console.log("creating default databases");
-        let connection = this.createConnection();
-        connection.server = "10.170.70.7\\SQLREAL";
-        connection.database = "Winess4";
-        connection.username = "sa";
-        connection.password = "erido31.!2";
-
-        connection = this.createConnection();
-        connection.server = "10.170.70.7\\SQLREAL";
-        connection.database = "Diabas-RegionB";
-        connection.username = "sa";
-        connection.password = "erido31.!2";
-
-        connection = this.createConnection();
-        connection.server = "10.170.70.7\\SQLREAL";
-        connection.database = "Arkiv60";
-        connection.username = "sa";
-        connection.password = "erido31.!2";
-        this.saveData(
-          this.connections.map(connection => {
-            return connection.id;
-          })
-        );
       }
     } catch (err) {
       console.error(err);
