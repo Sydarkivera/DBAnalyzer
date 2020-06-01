@@ -24,7 +24,7 @@ class Table extends Component {
   @observable highlight = [];
   // @observable end = 30;
 
-  allowData = false;
+  allowData = true;
 
   constructor() {
     super();

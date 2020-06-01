@@ -4,18 +4,31 @@ import { observer, inject } from "mobx-react";
 import "../App.css";
 import "./dbSelect.css";
 
+import {connect} from '../database/index'
+
 const mssql = window.require("mssql");
+var mysql = window.require('mysql');
 // const sql = window.require("mssql");
+
+var odbc = require('odbc')();
+
+odbc.open("SERVER=localhost;UID=aa;PWD=aa;DATABASE=first", function (err) {
+	if (err) {
+		return console.log(err);
+	}
+
+	//we now have an open connection to the database
+});
 
 @inject("connectionStore", "selectedStore")
 @observer
 class DBSelectScreen extends Component {
   @observable showAddForm = false;
 
-  @observable serverName = "";
-  @observable database = "";
-  @observable username = "";
-  @observable password = "";
+  @observable serverName = "127.0.0.1";
+  @observable database = "first";
+  @observable username = "aa";
+  @observable password = "aa";
 
   @observable formConnectionStatus = "";
 
@@ -25,26 +38,14 @@ class DBSelectScreen extends Component {
     console.log(this.username);
     console.log(this.password);
     this.formConnectionStatus = "";
-    await mssql.connect(
-      {
-        server: this.serverName,
-        database: this.database,
-        user: this.username,
-        password: this.password
-      },
-      err => {
-        // var cons = this.props.connectionStore.connections;
-        // con["loading"] = false;
-        if (err) {
-          this.formConnectionStatus = err["name"];
-        } else {
-          this.formConnectionStatus = "Success";
-        }
-        // console.log(err);
-        // this.setState({ connections: cons });
-      }
-    );
-    // console.log(res);
+
+
+    connect({serverName: this.serverName, username: this.username, password: this.password, database: this.database}, 'mysql')
+    .then((con) => {
+      this.formConnectionStatus = "Success";
+    }).catch((err) => {
+      this.formConnectionStatus = err["name"];
+    });
   };
 
   createFormConnection = event => {
