@@ -64,6 +64,7 @@ jobs:
           file: ./build_os/db-analyzer*
           asset_name: mything
           tag: ${{ github.ref }}
-          overwrite: true
+          overwrite: true,
+          file_glob: true,
           # body: "This is my release text"
       
