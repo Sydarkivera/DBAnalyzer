@@ -1,5 +1,11 @@
 const electron = require('electron');
 const isDev = require('electron-is-dev');
+const fs = require('fs');
+
+const log = require('electron-log');
+
+log.info('Hello, log');
+log.warn('Some problem appears');
 
 // require("electron-reload")(__dirname);
 // Module to control application life.
@@ -17,24 +23,33 @@ const path = require('path');
 let mainWindow;
 
 function createWindow() {
-      process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
+  process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1300,
     height: 900,
     webPreferences: {
-      nodeIntegration: true
-    }
+      nodeIntegration: true,
+    },
   });
 
-  console.log('crating window');
+  log.info('crating window');
 
   // and load the index.html of the app.
   if (isDev) {
     mainWindow.loadURL('http://localhost:4000');
   } else {
-    mainWindow.loadURL(`file://${path.join(__dirname, './index.html')}`);
+    log.info(__dirname, path.join(app.getAppPath(), 'dist/index.html'), app.getAppPath());
+    fs.readdir(app.getAppPath(), (err, files) => {
+      if (err) {
+        return;
+      }
+      files.forEach((file) => {
+        log.info(file);
+      });
+    });
+    mainWindow.loadURL(`file://${path.join(app.getAppPath(), 'dist/index.html')}`);
   }
 
   // Open the DevTools.

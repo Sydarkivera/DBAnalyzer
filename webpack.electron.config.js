@@ -6,6 +6,11 @@ module.exports = {
   },
   devtool: 'source-map',
   entry: './electron/main.js',
+  context: __dirname,
+  node: {
+    __filename: true,
+    __dirname: true
+  },
   target: 'electron-main',
   module: {
     rules: [
