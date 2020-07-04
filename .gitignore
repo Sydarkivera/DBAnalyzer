@@ -24,3 +24,4 @@ yarn-error.log*
 
 electron-darwin-x64/
 DBAnalyser-linux-x64/
+DBAnalyser-darwin-x64/
