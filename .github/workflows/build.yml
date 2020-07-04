@@ -58,11 +58,13 @@ jobs:
       #     asset_name: my-artifact.zip
       #     asset_content_type: application/zip
       - name: Upload the artifacts
-        uses: skx/github-action-publish-binaries@master
+        uses: xresloader/upload-to-github-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: './build_os/*'
+          file: "./build_os/*"
+          tags: true
+          draft: true
       # - name: Upload binaries to release
       #   uses: svenstaro/upload-release-action@v2
       #   with:
