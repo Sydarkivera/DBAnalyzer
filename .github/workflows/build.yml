@@ -25,6 +25,8 @@ jobs:
         run: npm install
       - name: Build electon app
         run: yarn dist
+      - name: list results
+        run: ls . && ls ./build_os
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
