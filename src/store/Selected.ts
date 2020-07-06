@@ -7,6 +7,7 @@ import {
 import ConnectionStore from './Connection';
 import ConnectionsStore from './Connections';
 import TableStore from './Table';
+import ErrorStore from './ErrorStore';
 
 const FileStore = window.require('electron-store');
 const fileStore = new FileStore();
@@ -22,8 +23,11 @@ export default class SelectedStore {
 
   connectionList: ConnectionsStore;
 
-  constructor(connectionList: ConnectionsStore) {
+  errorStore: ErrorStore
+
+  constructor(connectionList: ConnectionsStore, errorStore: ErrorStore) {
     this.connectionList = connectionList;
+    this.errorStore = errorStore;
     [this.connection] = connectionList.connections;
 
     this.loadSaveData();

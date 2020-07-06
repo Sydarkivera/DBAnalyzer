@@ -2,17 +2,23 @@ import MSSQL from './mssql';
 import MYSQL from './mysql';
 import { ConnectionData, ForeignKeyStructure, ColumnStructure } from './structures';
 
+// import stores from '../store';
+
+// const { errorStore } = stores;
+
+// console.log(errorStore);
+
 export default {
 
   async connect(connectionData: ConnectionData) {
-    console.log(`testing ${connectionData.dbms} connection`);
+    // console.log(`testing ${connectionData.dbms} connection`);
 
     if (connectionData.dbms === 'mssql') {
       return MSSQL.connect(connectionData);
     } if (connectionData.dbms === 'mysql') {
       return MYSQL.connect(connectionData);
     }
-    throw `Unknown DBMS: ${connectionData.dbms}`;
+    throw new Error(`Unknown DBMS: ${connectionData.dbms} in connect`);
   },
 
   async fetchAllTables(connectionData: ConnectionData) {
@@ -21,7 +27,7 @@ export default {
     } if (connectionData.dbms === 'mysql') {
       return MYSQL.fetchAllTables(connectionData);
     }
-    throw `Unknown DBMS: ${connectionData.dbms}`;
+    throw new Error(`Unknown DBMS: ${connectionData.dbms} in fetchAllTables`);
   },
 
   async fetchColumns(connectionData: ConnectionData, tableName: string) {
@@ -30,7 +36,7 @@ export default {
     } if (connectionData.dbms === 'mysql') {
       return MYSQL.fetchColumns(connectionData, tableName);
     }
-    throw `Unknown DBMS: ${connectionData.dbms}`;
+    throw new Error(`Unknown DBMS: ${connectionData.dbms} in fetchColumns`);
   },
 
   async fetchData(
@@ -42,7 +48,7 @@ export default {
     } if (connectionData.dbms === 'mysql') {
       return MYSQL.fetchData(connectionData, tableName, start, end, columnName);
     }
-    throw `Unknown DBMS: ${connectionData.dbms}`;
+    throw new Error(`Unknown DBMS: ${connectionData.dbms} in fetchData`);
   },
   async fetchPrimaryKeys(connectionData: ConnectionData, tableName: string): Promise<string[]> {
     if (connectionData.dbms === 'mssql') {
@@ -50,7 +56,7 @@ export default {
     } if (connectionData.dbms === 'mysql') {
       return MYSQL.fetchPrimaryKeys(connectionData, tableName);
     }
-    throw `Unknown DBMS: ${connectionData.dbms}`;
+    throw new Error(`Unknown DBMS: ${connectionData.dbms} in fetchPrimaryKeys`);
   },
   async fetchForeignKeys(
     connectionData: ConnectionData,
@@ -61,7 +67,7 @@ export default {
     } if (connectionData.dbms === 'mysql') {
       return MYSQL.fetchForeignKeys(connectionData, tableName);
     }
-    throw `Unknown DBMS: ${connectionData.dbms}`;
+    throw new Error(`Unknown DBMS: ${connectionData.dbms} in fetchForeignKeys`);
   },
   async checkIfColumnIsNull(
     connectionData: ConnectionData, tableName: string, columnName: string,
@@ -71,7 +77,7 @@ export default {
     } if (connectionData.dbms === 'mysql') {
       return MYSQL.checkIfColumnIsNull(connectionData, tableName, columnName);
     }
-    throw `Unknown DBMS: ${connectionData.dbms}`;
+    throw new Error(`Unknown DBMS: ${connectionData.dbms} in checkIfColumnIsNull`);
   },
   async countNumberofRows(
     connectionData: ConnectionData, tableName: string,
@@ -81,7 +87,7 @@ export default {
     } if (connectionData.dbms === 'mysql') {
       return MYSQL.countNumberofRows(connectionData, tableName);
     }
-    throw `Unknown DBMS: ${connectionData.dbms}`;
+    throw new Error(`Unknown DBMS: ${connectionData.dbms} in countNumberofRows`);
   },
   async countUniqueRows(
     connectionData: ConnectionData, tableName: string, columns: ColumnStructure[],
@@ -91,9 +97,7 @@ export default {
     } if (connectionData.dbms === 'mysql') {
       return MYSQL.countUniqueRows(connectionData, tableName, columns);
     }
-    throw `Unknown DBMS: ${connectionData.dbms} in countUniqueRows`;
-
-    return 0;
+    throw new Error(`Unknown DBMS: ${connectionData.dbms} in countUniqueRows`);
   },
   async testIfValuesInColumnExistInOtherTable(
     connectionData: ConnectionData, candidateTable: string,
@@ -108,9 +112,7 @@ export default {
         connectionData, candidateTable, candidateColumn, foreignTable, foreignColumn,
       );
     }
-    throw `Unknown DBMS: ${connectionData.dbms} in testIfValuesInColumnExistInOtherTable`;
-
-    return false;
+    throw new Error(`Unknown DBMS: ${connectionData.dbms} in testIfValuesInColumnExistInOtherTable`);
   },
   // testIfForeignKey(this.connection, this.tableName, key, table.tableName, perms[i]);
   async testIfForeignKey(
@@ -127,63 +129,8 @@ export default {
         connectionData, candidateTable, candidateColumns, foreignTable, foreignColumns,
       );
     }
-    throw `Unknown DBMS: ${connectionData.dbms} in testIfForeignKey`;
-
-    return false;
+    // errorStore.add(`Unknown DBMS: ${connectionData.dbms} in testIfForeignKey`);
+    throw new Error(`Unknown DBMS: ${connectionData.dbms} in testIfForeignKey`);
   },
 
 };
-
-// const mssql = window.require("mssql");
-// var mysql = window.require('mysql');
-
-// export function connect(conData:ConnectionData) {
-
-//   return new Promise(async (resolve, reject) => {
-
-// if (conData.dbms === "mysql") {
-//   return mysql.connect
-//     var con = mysql.createConnection({
-//       host: conData.server,
-//       user: conData.username,
-//       password: conData.password,
-//       database: conData.database
-//     });
-
-//     con.connect(function(err: any) {
-//       if (err) reject(err);
-//       resolve(con);
-//     });
-
-//   } else if (conData.dbms === "mssql") {
-//     await mssql.connect(
-//       {
-//         server: conData.server,
-//         database: conData.database,
-//         user: conData.username,
-//         password: conData.password
-//       },
-//       (err: any) => {
-//         // var cons = this.props.connectionStore.connections;
-//         // con["loading"] = false;
-//         if (err) {
-//           // this.formConnectionStatus = err["name"];
-//           reject(err);
-//         } else {
-//           // this.formConnectionStatus = "Success";
-//           resolve();
-//         }
-//         // console.log(err);
-//         // this.setState({ connections: cons });
-//       }
-//     );
-//   }
-
-//   })
-
-// }
-
-// export async function fetchListOfTables(conData:ConnectionData): Promise<any> {
-
-//   return null;
-// }

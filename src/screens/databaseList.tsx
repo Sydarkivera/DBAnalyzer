@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component, MouseEvent } from 'react';
 import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
-import TextField from '../components/TextField';
+import ErrorStore from 'src/store/ErrorStore';
 import ConnectionStore from '../store/Connection';
 import ConnectionsStore from '../store/Connections';
 import SelectedStore from '../store/Selected';
@@ -10,33 +10,44 @@ import ConnectionModal from '../components/ConnectionModal';
 interface PropsType {
   history: any,
   connections: ConnectionsStore,
-  selected: SelectedStore
+  selected: SelectedStore,
+  errorStore: ErrorStore
 }
 
-@inject('connections', 'selected')
+@inject('connections', 'selected', 'errorStore')
 @observer
 class DBSelectScreen extends Component<PropsType> {
   @observable showAddForm = false;
 
-  @observable demoConnection: ConnectionStore = new ConnectionStore();
+  @observable demoConnection: ConnectionStore;
 
   @observable formConnectionStatus = '';
+
+  constructor(props: PropsType) {
+    super(props);
+    // console.log(props.errorStore);
+
+    this.demoConnection = new ConnectionStore(props.errorStore);
+  }
 
   testFormConnection = async () => {
     this.demoConnection.testConnection();
   };
 
   createFormConnection = (event: any) => {
-    const { connections } = this.props;
+    const { connections, errorStore } = this.props;
     connections.addConnection(this.demoConnection);
-    this.demoConnection = new ConnectionStore();
+    this.demoConnection = new ConnectionStore(errorStore);
+    this.showAddForm = false;
   };
 
-  removeConnection(connection: ConnectionStore) {
+  removeConnection(e: MouseEvent, connection: ConnectionStore) {
     const { connections } = this.props;
 
-    // TODO: add confirmation
-    connections.delete(connection.id);
+    e.stopPropagation();
+    if (confirm(`Are you sure you want to remove: ${connection.cLabel}`)) {
+      connections.delete(connection.id);
+    }
   }
 
   selectConnection(connection: ConnectionStore) {
@@ -78,7 +89,7 @@ class DBSelectScreen extends Component<PropsType> {
         </p>
         <p
           className="button button-danger"
-          onClick={() => this.removeConnection(item)}
+          onClick={(e) => this.removeConnection(e, item)}
         >
           Remove
         </p>
@@ -89,11 +100,11 @@ class DBSelectScreen extends Component<PropsType> {
   render() {
     return (
       <>
-        <nav className="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+        <nav className="navbar is-fixed-top" aria-label="main navigation">
           <div className="navbar-brand">
-            <a className="navbar-item" href="https://bulma.io">
+            <p className="navbar-item">
               DB Analyzer
-            </a>
+            </p>
           </div>
           <div className="navbar-menu">
             <div className="navbar-end">

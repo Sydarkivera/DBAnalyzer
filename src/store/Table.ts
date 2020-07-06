@@ -7,7 +7,8 @@ import { ForeignKeyStructure, ColumnStructure } from '../database/structures';
 // import DatabaseStructureStore from './DatabaseStructure';
 import ConnectionStore from './Connection';
 import { permutations, removeDoubles, testKeyLikeliness } from '../functions/permutations';
-import { getSQLColumnsFromList } from '../functions/sql';
+// import { getSQLColumnsFromList } from '../functions/sql';
+import ErrorStore from './ErrorStore';
 
 const FileStore = window.require('electron-store');
 const fileStore = new FileStore();
@@ -43,9 +44,12 @@ export default class TableStore {
 
   connection: ConnectionStore;
 
+  errorStore: ErrorStore
+
   saveHandler: IReactionDisposer;
 
-  constructor(connection: ConnectionStore, id = '') {
+  constructor(connection: ConnectionStore, errorStore: ErrorStore, id = '') {
+    this.errorStore = errorStore;
     this.connection = connection;
     this.id = id;
 
@@ -93,7 +97,7 @@ export default class TableStore {
     try {
       fileStore.set(`table_${this.id}`, this.json);
     } catch (e) {
-      console.error(e);
+      // console.error(e);
     }
   }
 
@@ -114,9 +118,9 @@ export default class TableStore {
 
     // console.log(this.columns);
 
-    // if (this.columns.length > 0) {
-    //   return;
-    // }
+    if (this.columns.length > 0) {
+      return;
+    }
 
     const columns = await DatabaseManager
       .fetchColumns(this.connection.connectionData, this.tableName);
@@ -165,29 +169,29 @@ export default class TableStore {
 
   async fetchData(start: number, end: number) {
     if (!this.columns || this.columns.length <= 0) {
-      return; // TODO: fetch columns instead
+      return;
     }
-    const res = await DatabaseManager
-      .fetchData(this.connection.connectionData,
-        this.tableName, start, end, this.columns[0].columnName);
-    this.data = res;
+    try {
+      const res = await DatabaseManager
+        .fetchData(this.connection.connectionData,
+          this.tableName, start, end, this.columns[0].columnName);
+      this.data = res;
+    } catch (e) {
+      this.errorStore.add(`Error fetching data for table: ${this.tableName}`);
+    }
     // console.log(res);
   }
 
   @action async findNullColumns() {
+    const excluded = ['image'];
     for (const i in this.columns) {
-      // console.log(i, this.columns.length);
       const column = this.columns[i];
-      const excluded = ['image'];
-      // column["isNull"] = false;
       column.isNull = false;
       if (excluded.indexOf(column.dataType) < 0) {
         const r = await DatabaseManager
           .checkIfColumnIsNull(this.connection, this.tableName, column.columnName);
-        if (r.length <= 0) {
-          // all null
-          console.log('null');
 
+        if (r.length <= 0) {
           column.isNull = true;
         }
       }
@@ -229,7 +233,7 @@ export default class TableStore {
     // // console.log(tcRes);
     // var tableCount = tcRes[0]["count"];
 
-    console.log(rowCount);
+    // console.log(rowCount);
 
     await this.testCombinationsAlternative(possibleColumns, rowCount);
     this.saveData();
@@ -266,10 +270,10 @@ export default class TableStore {
       }));
       // console.log(n);
       this.candidateKeys.push(n);
-      console.log(
-        'candidate:',
-        current.map((item) => item.columnName),
-      );
+      // console.log(
+      //   'candidate:',
+      //   current.map((item) => item.columnName),
+      // );
 
       let newArray = [...array];
       for (let i = 0; i < current.length; i++) {
@@ -304,7 +308,7 @@ export default class TableStore {
     }
     // let allTables = this.props.selectedStore.connection.databaseStructure
     //   .tables;
-    console.log('starting foreign key search on table: ', this.tableName);
+    // console.log('starting foreign key search on table: ', this.tableName);
     for (const index in selectedTable.candidateKeys) {
       const key = selectedTable.candidateKeys[index];
       // for every table check if any set of columns contain this key.
@@ -333,7 +337,7 @@ export default class TableStore {
           if (possibleColumns.length === key.length) {
             // test if all valuess of the candidate key exists in the potential column
             // console.log(possibleColumns);
-            let tests = 0;
+            // let tests = 0;
             const t = [];
             for (let i = 0; i < possibleColumns.length; i++) {
               const q = [];
@@ -344,7 +348,7 @@ export default class TableStore {
                       this.tableName, key[i].columnName,
                       table.tableName, possibleColumns[i][j].columnName);
 
-                  tests += 1;
+                  // tests += 1;
                   if (exists) {
                     q.push(possibleColumns[i][j]);
                   }
@@ -400,16 +404,16 @@ export default class TableStore {
                       pkColumn: key[j].columnName,
                     })),
                   }];
-                  console.log(
-                    'Foreign key found. PKTable: ',
-                    this.tableName,
-                    ', PKColumns: ',
-                    getSQLColumnsFromList(key),
-                    'FKTable: ',
-                    table.tableName,
-                    ', FKColumns: ',
-                    getSQLColumnsFromList(perms[i]),
-                  );
+                  // console.log(
+                  //   'Foreign key found. PKTable: ',
+                  //   this.tableName,
+                  //   ', PKColumns: ',
+                  //   getSQLColumnsFromList(key),
+                  //   'FKTable: ',
+                  //   table.tableName,
+                  //   ', FKColumns: ',
+                  //   getSQLColumnsFromList(perms[i]),
+                  // );
                 }
               }
             }

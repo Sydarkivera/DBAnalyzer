@@ -37,7 +37,7 @@ import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
 ReactDOM.render(
   <BrowserRouter>
     <Provider {...stores}>
-      <App />
+      <App errorStore={stores.errorStore} />
     </Provider>
   </BrowserRouter>,
   document.getElementById('root'),

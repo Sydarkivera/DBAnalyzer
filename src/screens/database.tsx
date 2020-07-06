@@ -5,6 +5,7 @@ import { observer, inject } from 'mobx-react';
 import '../App.css';
 
 import { FaSearch } from 'react-icons/fa';
+import ErrorStore from 'src/store/ErrorStore';
 import ConnectionModal from '../components/ConnectionModal';
 import ProgressBar, { VisualPart } from '../components/progressBar';
 import SelectedStore from '../store/Selected';
@@ -16,22 +17,25 @@ import ConnectionStore from '../store/Connection';
 
 interface PropsType {
   history: any,
-  selected: SelectedStore
+  selected: SelectedStore,
+  errorStore: ErrorStore
 }
 
-@inject('selected')
+@inject('selected', 'errorStore')
 @observer
 class DatabaseScreen extends Component<PropsType> {
   @observable searchText = '';
 
   @observable showEditForm = false;
 
-  @observable formConnection = new ConnectionStore();
+  @observable formConnection: ConnectionStore
 
   // state: StateType;
 
   constructor(props: PropsType) {
     super(props);
+
+    this.formConnection = new ConnectionStore(props.errorStore);
 
     props.selected.connection.struture.fetchAllTables();
   }
@@ -112,6 +116,7 @@ class DatabaseScreen extends Component<PropsType> {
               {' '}
               Potential Foreign Keys
             </p>
+
             { step < 5 && struture.isRunning
               && (
               <>
@@ -124,9 +129,30 @@ class DatabaseScreen extends Component<PropsType> {
                 <ProgressBar label="label" visualParts={this.calculateVisualParts(step, 4)} />
               </>
               )}
+            {step >= 5 && !struture.isRunning
+              && (
+              <button
+                className="button is-danger"
+                type="button"
+                onClick={(e) => { struture.analysisStep = 0; struture.structureStep = 0; struture.startStructureAnalysis(0, false); e.stopPropagation(); }}
+              >
+                Run again
+              </button>
+              )}
           </ExpandableListItem>
           <ExpandableListItem title="Culling analysis" isRunning={false} isReady={step >= 5 && aStep < 4} isComplete={aStep >= 4} onClick={() => struture.startCulling(0)}>
             <p>Culling info...</p>
+            {aStep >= 4 && <p>Done</p>}
+            {aStep >= 4
+              && (
+              <button
+                className="button is-danger"
+                type="button"
+                onClick={(e) => { struture.analysisStep = 0; struture.startCulling(0); e.stopPropagation(); }}
+              >
+                Run again
+              </button>
+              )}
           </ExpandableListItem>
           <div className="list-item">
             <p style={{ fontWeight: 'bold' }}>Verify tables</p>
@@ -224,7 +250,7 @@ class DatabaseScreen extends Component<PropsType> {
 
     return (
       <div className="DatabaseScreen">
-        <nav className="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+        <nav className="navbar is-fixed-top" aria-label="main navigation">
           <div className="navbar-brand">
             <div className="navbar-item">
               <Link

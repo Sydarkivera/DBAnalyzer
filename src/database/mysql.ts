@@ -22,17 +22,42 @@ async function connect(connectionData: ConnectionData): Promise<Connection> {
 
 async function fetchAllTables(connectionData: ConnectionData) {
   const con: Connection = await connect(connectionData);
-  return new Promise((resolve, reject) => con.query(`SELECT table_rows as TotalRowCount, TABLE_NAME as TableName FROM information_schema.tables WHERE TABLE_SCHEMA = '${connectionData.database}'`, (error, results, fields) => {
+  return new Promise((resolve, reject) => con.query(
+    `SELECT table_rows as TotalRowCount, TABLE_NAME as TableName FROM information_schema.tables WHERE TABLE_SCHEMA = '${connectionData.database}' and table_type = 'BASE TABLE'`,
+    // `SELECT c.table_rows as TotalRowCount, t.TABLE_NAME as TableName FROM information_schema.tables WHERE TABLE_SCHEMA = '${connectionData.database}'`,
+    (error, results, fields) => {
     // console.log(error, results, fields);
 
-    // return {error, results, fields}
-    if (error) {
-      reject(error);
-    } else {
-      resolve(results);
-    }
-    con.end();
-  }));
+      // return {error, results, fields}
+      if (error) {
+        reject(error);
+      } else {
+        // find the exact number of rows per table
+
+        const promises = results.map((item: any) => getRowCount(con, connectionData, item.TableName));
+        Promise.all(promises).then((res: any[]) => {
+          resolve(results.map((item:any, i: number) => ({ ...item, inaccurateRowCount: item.TotalRowCount, TotalRowCount: res[i][0].TotalRowCount })));
+        }).catch(() => {
+          resolve(results);
+        });
+        // console.log(promises);
+      }
+      con.end();
+    },
+  ));
+}
+
+async function getRowCount(con: Connection, connectionData: ConnectionData, TableName: string) {
+  return new Promise((resolve, reject) => con.query(
+    `SELECT COUNT(*) as TotalRowCount FROM ${connectionData.database}.${TableName}`,
+    (error, results, fields) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results);
+      }
+    },
+  ));
 }
 
 async function fetchColumns(connectionData: ConnectionData, tableName: string) {
@@ -159,15 +184,15 @@ TABLE_NAME = '${tableName}' AND CONSTRAINT_NAME != 'PRIMARY' AND REFERENCED_TABL
 async function checkIfColumnIsNull(connectionData: ConnectionData, tableName: string, columnName: string): Promise<any[]> {
   const con: Connection = await connect(connectionData);
   return new Promise((resolve, reject) => con.query(
-    `SELECT "${
+    `SELECT ${
       columnName
-    }" FROM \`${
+    } FROM \`${
       tableName
-    }\` WHERE "${
+    }\` WHERE ${
       columnName
-    }" IS NOT NULL LIMIT 1`,
+    } IS NOT NULL AND ${columnName} != '' LIMIT 1`,
     (error, results, fields) => {
-      console.log(error, results, fields);
+      // console.log(error, results, fields);
 
       // return {error, results, fields}
       if (error) {
@@ -189,7 +214,7 @@ async function countNumberofRows(connectionData: ConnectionData, tableName: stri
     // https://stackoverflow.com/questions/20648045/why-is-mysql-is-giving-an-incorrect-count-for-a-simple-query
     `SELECT COUNT(*) as count FROM \`${tableName}\` LIMIT 0 , 100`,
     (error, results, fields) => {
-      console.log(error, results, fields);
+      // console.log(error, results, fields);
 
       // return {error, results, fields}
       if (error) {

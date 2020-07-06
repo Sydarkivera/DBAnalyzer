@@ -2,6 +2,7 @@ import {
   observable, action,
 } from 'mobx';
 import ConnectionStore from './Connection';
+import ErrorStore from './ErrorStore';
 
 const FileStore = window.require('electron-store');
 const fileStore = new FileStore();
@@ -9,8 +10,11 @@ const fileStore = new FileStore();
 export default class ConnectionsStore {
   @observable connections: ConnectionStore[] = [];
 
-  constructor() {
+  errorStore: ErrorStore
+
+  constructor(errorStore: ErrorStore) {
     // load initial data
+    this.errorStore = errorStore;
     this.loadSavedData();
   }
 
@@ -37,7 +41,7 @@ export default class ConnectionsStore {
         for (const index in data) {
           // console.log(data[index]);
 
-          this.connections.push(new ConnectionStore(data[index]));
+          this.connections.push(new ConnectionStore(this.errorStore, data[index]));
           // console.log(this.connections);
         }
         // this.autoSave = true;

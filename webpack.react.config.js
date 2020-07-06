@@ -57,7 +57,10 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       title: 'Production',
-      template: 'index.html'
+      template: 'index.html',
+      templateParameters: {
+        base: process.env.NODE_ENV === 'development' ? '/' : './'
+      }
     })
   ],
   externals: {
@@ -68,3 +71,4 @@ module.exports = {
     // "react-dom": "ReactDOM"
 }
 };
+

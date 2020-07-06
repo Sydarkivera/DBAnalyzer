@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 import DatabaseManager from '../database';
 import { ConnectionData } from '../database/structures';
 import DatabaseStructureStore from './DatabaseStructure';
+import ErrorStore from './ErrorStore';
 
 const FileStore = window.require('electron-store');
 const fileStore = new FileStore();
@@ -20,7 +21,7 @@ export default class ConnectionStore {
 
   @observable port = 0;
 
-  @observable dbms = '';
+  @observable dbms = 'mysql';
 
   @observable loading = false;
 
@@ -32,7 +33,10 @@ export default class ConnectionStore {
 
   @observable label = '';
 
-  constructor(id = '') {
+  errorStore: ErrorStore
+
+  constructor(errorStore: ErrorStore, id = '') {
+    this.errorStore = errorStore;
     if (id !== '') {
       // load data from storage
       this.loadSavedData(id);
@@ -40,7 +44,7 @@ export default class ConnectionStore {
       // give id
       this.id = uuid();
     }
-    this.struture = new DatabaseStructureStore(this, id);
+    this.struture = new DatabaseStructureStore(this, this.errorStore, id);
   }
 
   @computed get connectionData(): ConnectionData {
@@ -100,9 +104,14 @@ export default class ConnectionStore {
     DatabaseManager.connect(this.connectionData).then(() => {
       this.loading = false;
       this.status = 'Success';
-    }).catch(() => {
+    }).catch((e) => {
       this.loading = false;
       this.status = 'Error establising connection. Verify that you have entered the correct credentials and that you are on the same network as the server';
+
+      console.log(e, 'message:', e.message, e.name, e.stack, e.description);
+      console.log(e.name);
+
+      this.errorStore.add('Error establising connection. Verify that you have entered the correct credentials and that you are on the same network as the server', e.message);
     });
   }
 }

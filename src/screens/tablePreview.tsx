@@ -89,9 +89,9 @@ class TablePreviewScreen extends Component<PropsType> {
   //   // this.getInitialData();
   // };
 
-  selectForeignKey(key: any) {
-    const { selected } = this.props;
-    console.log(key);
+  // selectForeignKey(key: any) {
+  //   const { selected } = this.props;
+  //   console.log(key);
 
   //   // display popup with new table. Or let the table
   //   if (!key.table) {
@@ -101,7 +101,7 @@ class TablePreviewScreen extends Component<PropsType> {
   //     this.popupTable = key.table;
   //     this.poppupColumns = key.pointingOnColumn;
   //   }
-  }
+  // }
 
   // renderPopup() {
   //   if (!this.popupTable) {
@@ -165,7 +165,7 @@ class TablePreviewScreen extends Component<PropsType> {
 
     return (
       <div className="DatabaseScreen">
-        <nav className="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+        <nav className="navbar is-fixed-top" aria-label="main navigation">
           <div className="navbar-brand">
             <div className="navbar-item">
               <Link
@@ -195,7 +195,7 @@ class TablePreviewScreen extends Component<PropsType> {
           <TableComponent
             table={selected.table}
             structure={selected.connection.struture}
-            selectForeignKey={(key: any) => this.selectForeignKey(key)}
+            // selectForeignKey={(key: any) => this.selectForeignKey(key)}
           />
         </div>
         {/* {this.renderPopup()} */}

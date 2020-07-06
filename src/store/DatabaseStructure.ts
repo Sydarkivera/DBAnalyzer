@@ -6,6 +6,7 @@ import { testKeyLikeliness } from '../functions/permutations';
 import DatabaseManager from '../database';
 import ConnectionStore from './Connection';
 import TableStore, { ShouldSave } from './Table';
+import ErrorStore from './ErrorStore';
 
 const FileStore = window.require('electron-store');
 const fileStore = new FileStore();
@@ -56,10 +57,13 @@ export default class DatabaseStructureStore {
 
   connection: ConnectionStore;
 
+  errorStore: ErrorStore
+
   saveHandler: IReactionDisposer;
 
-  constructor(connection: ConnectionStore, id = '') {
+  constructor(connection: ConnectionStore, errorStore: ErrorStore, id = '') {
     this.connection = connection;
+    this.errorStore = errorStore;
 
     // console.log(id);
 
@@ -101,7 +105,7 @@ export default class DatabaseStructureStore {
       for (const index in data.tables) {
         // console.log(data.tables[index]);
 
-        this.tables.push(new TableStore(this.connection, data.tables[index]));
+        this.tables.push(new TableStore(this.connection, this.errorStore, data.tables[index]));
       }
       // this.structureStep = 0;
       // this.analysisStep = 0;
@@ -118,7 +122,7 @@ export default class DatabaseStructureStore {
     try {
       fileStore.set(`structure_${this.id}`, this.json);
     } catch (e) {
-      console.error(e);
+      // console.error(e);
     }
   }
 
@@ -162,19 +166,20 @@ export default class DatabaseStructureStore {
   }
 
   async fetchAllTables() {
+    // console.log('fetch all tables');
+
     if (this.tables.length > 0) {
-      return; // TODO: Try updating and only update if change
+      return;
     }
 
     const result = await DatabaseManager.fetchAllTables(this.connection.connectionData);
-    // console.log(result);
 
     const tables = [];
     for (const index in result) {
       const row = result[index];
       // console.log(row);
 
-      const table = new TableStore(this.connection);
+      const table = new TableStore(this.connection, this.errorStore);
       table.tableName = row.TableName;
       table.rowCount = parseInt(row.TotalRowCount, 10);
       if (table.rowCount === 0) {
@@ -199,25 +204,42 @@ export default class DatabaseStructureStore {
     this.isRunning = true;
     let a = 0;
     if (start <= a++) {
-      await this.loadAllTableColumns();
+      // try {
+      if (!await this.loadAllTableColumns()) {
+        this.isRunning = false;
+        return;
+      }
       this.structureStep += 1;
-      console.log('loadAllTableColumns COMPLETE');
+      // console.log('loadAllTableColumns COMPLETE');
+      // } catch (e) {
+      //   this.errorStore.add(e.message);
+      //   return;
+      // }
     }
 
     if (start <= a++) {
-      await this.findNullColumns();
+      if (!await this.findNullColumns()) {
+        this.isRunning = false;
+        return;
+      }
       this.structureStep += 1;
-      console.log('findNullColumns COMPLETE');
+      // console.log('findNullColumns COMPLETE');
     }
     if (start <= a++) {
-      await this.findCandidateKeys();
+      if (!await this.findCandidateKeys()) {
+        this.isRunning = false;
+        return;
+      }
       this.structureStep += 1;
-      console.log('findCandidateKeys COMPLETE');
+      // console.log('findCandidateKeys COMPLETE');
     }
     if (start <= a++) {
-      await this.findForeignKeys();
+      if (!await this.findForeignKeys()) {
+        this.isRunning = false;
+        return;
+      }
       this.structureStep += 1;
-      console.log('findForeignKeys COMPLETE');
+      // console.log('findForeignKeys COMPLETE');
     }
     // if (start <= a++) { // optional
     //   await this.identifyMissedforeignKeys();
@@ -241,19 +263,19 @@ export default class DatabaseStructureStore {
     if (start <= a++) {
       this.removoeEmptyTables();
       this.analysisStep += 1;
-      console.log('removoeEmptyTables COMPLETE');
+      // console.log('removoeEmptyTables COMPLETE');
     }
 
     if (start <= a++) {
       this.findTablesWithOneColumn();
       this.analysisStep += 1;
-      console.log('findTablesWithOneColumn COMPLETE');
+      // console.log('findTablesWithOneColumn COMPLETE');
     }
 
     if (start <= a++) {
       this.findTablesWithNoRelations();
       this.analysisStep += 1;
-      console.log('findTabllesWithNoRelations COMPLETE');
+      // console.log('findTabllesWithNoRelations COMPLETE');
     }
 
     //  eliminate foreign keys that is defined in the database.
@@ -264,7 +286,7 @@ export default class DatabaseStructureStore {
     if (start <= a++) {
       this.findIslands();
       this.analysisStep += 1;
-      console.log('findIslands COMPLETE');
+      // console.log('findIslands COMPLETE');
     }
   }
 
@@ -287,12 +309,18 @@ export default class DatabaseStructureStore {
     for (const key in this.tables) {
       const table = this.tables[key];
       if (table.rowCount > 0) {
-        await table.fetchColumns();
+        try {
+          await table.fetchColumns();
+        } catch (e) {
+          this.errorStore.add(`Error loading column data for table: "${table.tableName}"`, e.message);
+          return false;
+        }
         // this.tableStructureLoaded += 1;
       }
       i++;
       this.progress = i / this.tables.length;
     }
+    return true;
   }
 
   async findNullColumns() {
@@ -302,12 +330,18 @@ export default class DatabaseStructureStore {
     for (const key in this.tables) {
       const table = this.tables[key];
       if (table.rowCount > 0) {
-        await table.findNullColumns();
+        try {
+          await table.findNullColumns();
+        } catch (e) {
+          this.errorStore.add(`Error finding column with no data in table: "${table.tableName}"`, e.message);
+          return false;
+        }
         // this.columnsCheckedFoNull += 1;
       }
       i++;
       this.progress = i / this.tables.length;
     }
+    return true;
   }
 
   findTablesWithOneColumn() {
@@ -339,12 +373,18 @@ export default class DatabaseStructureStore {
     for (const key in this.tables) {
       const table = this.tables[key];
       if (table.rowCount > 0) {
-        await table.findCandidateKeys();
+        try {
+          await table.findCandidateKeys();
+        } catch (e) {
+          this.errorStore.add(`Error finding candidate keys in table: "${table.tableName}"`, e.message);
+          return false;
+        }
         // this.tableCandidateKeysLoaded += 1;
       }
       i++;
       this.progress = i / this.tables.length;
     }
+    return true;
   }
 
   async findForeignKeys() {
@@ -361,12 +401,18 @@ export default class DatabaseStructureStore {
     for (const key in this.tables) {
       const table = this.tables[key];
       if (table.rowCount > 0) {
-        await table.findForeignKeys(this.tables);
+        try {
+          await table.findForeignKeys(this.tables);
+        } catch (e) {
+          this.errorStore.add(`Error finding foreign keys in table: "${table.tableName}"`, e.message);
+          return false;
+        }
         // this.tableForeignKeysLoaded += 1;
       }
       i++;
       this.progress = i / this.tables.length;
     }
+    return true;
   }
 
   identifyMissedforeignKeys() {
@@ -377,7 +423,7 @@ export default class DatabaseStructureStore {
           (item) => item.fkTable === fk.fkTable && item.pkTable === fk.pkTable,
         );
         if (!exists) {
-          console.log('Missed Foreign Key: ', fk.fkTable, fk.pkTable);
+          // console.log('Missed Foreign Key: ', fk.fkTable, fk.pkTable);
         }
       }
       i++;
@@ -445,7 +491,7 @@ export default class DatabaseStructureStore {
 
       // Remove the tables that already has been included into a set
       validTables = validTables.filter((item) => !newSet.has(item.tableName));
-      console.log(validTables.map((item) => item.tableName), newSet);
+      // console.log(validTables.map((item) => item.tableName), newSet);
     }
 
     // find the latgest set
@@ -470,7 +516,7 @@ export default class DatabaseStructureStore {
 
   // recursive function for creating a set of all tables that link to a specifik table
   checkSet(existing: Set<string>, table: TableStore, tables: TableStore[]) {
-    console.log(existing);
+    // console.log(existing);
 
     const newSet: Set<TableStore> = new Set();
 

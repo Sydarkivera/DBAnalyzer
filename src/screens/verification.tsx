@@ -63,7 +63,7 @@ class TableVerificationScreen extends Component<PropType> {
   // }
 
   openPopup(tableName: string) {
-    console.log(tableName);
+    // console.log(tableName);
     this.popupTable = tableName;
     this.poppupColumns = [];
   }
@@ -109,17 +109,80 @@ class TableVerificationScreen extends Component<PropType> {
 
   // }
 
-  render() {
+  renderSmallList() {
     const { selected } = this.props;
-    const { connection } = selected;
-    const { struture } = connection;
-
-    // list tables that should be verified.
+    const { struture } = selected.connection;
     let id = 0;
 
     return (
+      <div className="box">
+        <h3>Tables which are too small to be relevant</h3>
+        {struture.tablesToVerify
+          .filter((item) => item.type !== 'island' && item.type !== 'single')
+          .map((item) => (
+            <VerifyTable
+              key={id++}
+              tables={struture.tables}
+              item={item}
+              previewTable={(name: any) => this.openPopup(name)}
+            />
+          ))}
+      </div>
+    );
+  }
+
+  renderNoConnections() {
+    const { selected } = this.props;
+    const { struture } = selected.connection;
+    let id = 0;
+
+    return (
+      <div className="box">
+        <h3>Tables with no connections</h3>
+        {struture.tablesToVerify
+          .filter((item) => item.type === 'single')
+          .map((item, i) => (
+            <VerifyTable
+              key={id++}
+              tables={struture.tables}
+              item={item}
+              previewTable={(name: any) => this.openPopup(name)}
+            />
+          ))}
+      </div>
+    );
+  }
+
+  renderFewConnections() {
+    const { selected } = this.props;
+    const { struture } = selected.connection;
+    let id = 0;
+
+    return (
+      <div className="box">
+        <h3>Tables with no relevant connections making them useless</h3>
+        {struture.tablesToVerify
+          .filter((item) => item.type === 'island')
+          .map((item, i) => (
+            <VerifyTable
+              key={id++}
+              tables={struture.tables}
+              item={item}
+              previewTable={(name: any) => this.openPopup(name)}
+            />
+          ))}
+      </div>
+    );
+  }
+
+  render() {
+    const { selected } = this.props;
+    const { connection } = selected;
+
+    // list tables that should be verified.
+    return (
       <div className="DatabaseScreen">
-        <nav className="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+        <nav className="navbar is-fixed-top" aria-label="main navigation">
           <div className="navbar-brand">
             <div className="navbar-item">
               <Link
@@ -133,50 +196,14 @@ class TableVerificationScreen extends Component<PropType> {
           </div>
           <div className="navbar-start">
             <h2 className="navbar-item">
-              {connection ? `${connection.server} : ${connection.database}` : ''}
+              {connection.cLabel}
             </h2>
           </div>
         </nav>
         <div className="section">
-          <div className="box">
-            <h3>Tables which are too small to be relevant</h3>
-            {struture.tablesToVerify
-              .filter((item) => item.type !== 'island' && item.type !== 'single')
-              .map((item) => (
-                <VerifyTable
-                  key={id++}
-                  tables={struture.tables}
-                  item={item}
-                  previewTable={(name: any) => this.openPopup(name)}
-                />
-              ))}
-          </div>
-          <div className="box">
-            <h3>Tables with no connections</h3>
-            {struture.tablesToVerify
-              .filter((item) => item.type === 'single')
-              .map((item, i) => (
-                <VerifyTable
-                  key={id++}
-                  tables={struture.tables}
-                  item={item}
-                  previewTable={(name: any) => this.openPopup(name)}
-                />
-              ))}
-          </div>
-          <div className="box">
-            <h3>Tables with no relevant connections making them useless</h3>
-            {struture.tablesToVerify
-              .filter((item) => item.type === 'island')
-              .map((item, i) => (
-                <VerifyTable
-                  key={id++}
-                  tables={struture.tables}
-                  item={item}
-                  previewTable={(name: any) => this.openPopup(name)}
-                />
-              ))}
-          </div>
+          {this.renderSmallList()}
+          {this.renderNoConnections()}
+          {this.renderFewConnections()}
           {/* {this.renderPopup()} */}
         </div>
       </div>

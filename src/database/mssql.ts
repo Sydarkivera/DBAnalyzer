@@ -127,7 +127,7 @@ async function fetchForeignKeys(connectionData: ConnectionData, tableName: strin
 async function checkIfColumnIsNull(connectionData: ConnectionData, tableName: string, columnName: string): Promise<any[]> {
   await connect(connectionData);
   const request = new mssql.Request();
-  return request.query(
+  const result = await request.query(
     `SELECT TOP(1) "${
       columnName
     }" FROM [${
@@ -136,6 +136,7 @@ async function checkIfColumnIsNull(connectionData: ConnectionData, tableName: st
       columnName
     }" IS NOT NULL`,
   );
+  return result.recordset;
 }
 
 async function countNumberofRows(connectionData: ConnectionData, tableName: string): Promise<number> {

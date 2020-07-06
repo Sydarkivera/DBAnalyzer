@@ -29,6 +29,11 @@
     "react/jsx-filename-extension": [1, {
       "extensions": [".tsx", ".jsx"]
     }],
-    "jsx-a11y/label-has-associated-control": 0
+    "jsx-a11y/label-has-associated-control": 0,
+    "jsx-a11y/control-has-associated-label": 0,
+    "max-len": 0,
+    "no-alert": 0,
+    "no-restricted-globals": 0,
+    "jsx-a11y/heading-has-content": 0
   }
 }
