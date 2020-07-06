@@ -1,19 +1,12 @@
 /* eslint-disable class-methods-use-this */
 import React, { Component } from 'react';
-import { observer, inject } from 'mobx-react';
+import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import './table.css';
-import { FaRegCircle, FaRegCheckCircle } from 'react-icons/fa';
-import { testLikness } from '../functions/permutations';
 import ShouldSaveButton from './shouldSaveButton';
 import TableStore from '../store/Table';
 import DatabaseStructureStore from '../store/DatabaseStructure';
 import { ForeignKeyStructure, ForeignKeyColumn, ColumnStructure } from '../database/structures';
-// import { Table } from "../store/table";
-// import { Selected } from "../store/selected";
-// import "./tablePreview.css";
-
-const mssql = window.require('mssql');
 
 interface PropsType {
   // table?: Table,
@@ -53,6 +46,7 @@ class TableComponent extends Component<PropsType> {
     setTimeout(() => this.getInitialData(), 1000);
   }
 
+  // eslint-disable-next-line camelcase
   UNSAFE_componentWillReceiveProps(nextProps: PropsType) {
     const { table } = this.props;
     if (!nextProps.table) {
@@ -108,6 +102,8 @@ class TableComponent extends Component<PropsType> {
       'decimal',
       'timestamp',
       'mediumint',
+      'enum',
+      'set',
     ];
     for (const i in table.data) {
       const row = table.data[i];
@@ -207,37 +203,6 @@ class TableComponent extends Component<PropsType> {
   leaveFK = () => {
     this.highlight = [];
   };
-
-  // renderSaveButton(table: Table) {
-  // if (!table) {
-  //   return null;
-  // }
-  // switch (table.shouldSave) {
-  //   case 0:
-  //     return (
-  //       <FaRegCircle
-  //         style={{ color: "red" }}
-  //         onClick={() => (table.shouldSave = 1)}
-  //       />
-  //     );
-  //   case 1:
-  //     return (
-  //       <FaRegCheckCircle
-  //         style={{ color: "yellow" }}
-  //         onClick={() => (table.shouldSave = 2)}
-  //       />
-  //     );
-  //   case 2:
-  //     return (
-  //       <FaRegCheckCircle
-  //         style={{ color: "green" }}
-  //         onClick={() => (table.shouldSave = 0)}
-  //       />
-  //     );
-  //   default:
-  //     return null;
-  // }
-  // }
 
   getKeysPointingOnThisTable() {
     const { structure, table } = this.props;
@@ -370,6 +335,7 @@ class TableComponent extends Component<PropsType> {
         );
       }
     }
+
     // return null;
     let data: any;
     if (this.data.length > 0) {
@@ -378,11 +344,11 @@ class TableComponent extends Component<PropsType> {
         const rowContent = [];
         for (const i in this.data[index]) {
           const struct = columns[i];
-          if (!struct) {
-            console.log(struct);
-            console.log(columns);
-            console.log(this.data[index]);
-          }
+          // if (!struct) {
+          //   console.log(struct);
+          //   console.log(columns);
+          //   console.log(this.data[index]);
+          // }
 
           if (this.displayNullColumns || !struct.isNull) {
             rowContent.push(
@@ -398,12 +364,19 @@ class TableComponent extends Component<PropsType> {
           </tr>,
         );
       }
+    } else if (table.rowCount <= this.start) {
+      // no data available
+      data = (
+        <p>
+          No data available
+        </p>
+      );
     } else {
       data = (
         <tr className="preview-table-row">
           <td className="preview-table-item" colSpan={headerItems.length}>
             {this.allowData
-              ? 'Loading data'
+              ? 'Loading data...'
               : 'Permission denied for presentation'}
           </td>
         </tr>
@@ -413,6 +386,18 @@ class TableComponent extends Component<PropsType> {
     return (
       <div className="table-container" style={{ overflowY: 'visible' }}>
 
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          <ShouldSaveButton
+            style={{ alignSelf: 'center', fontSize: '2em', marginRight: 10 }}
+            shouldSave={table.shouldSave}
+            onChange={(val:any) => { table.shouldSave = val; }}
+          />
+          <h1 style={{ fontSize: '2em' }}>
+
+            {table.tableName}
+
+          </h1>
+        </div>
         <div className="alignRow">
           {this.start > 0 ? (
             <p className="right" onClick={this.displayPrevRows}>
@@ -467,7 +452,8 @@ class TableComponent extends Component<PropsType> {
 
     return (
       <div className="box">
-        <p>
+        {data}
+        <p style={{ textAlign: 'center' }}>
           Displaying
           {' '}
           {this.start}
@@ -477,14 +463,7 @@ class TableComponent extends Component<PropsType> {
           of
           {' '}
           {table ? table.rowCount : ''}
-          {' '}
-          {table.candidateKeys.length}
         </p>
-        <ShouldSaveButton
-          shouldSave={table.shouldSave}
-          onChange={(val:any) => { table.shouldSave = val; }}
-        />
-        {data}
       </div>
     );
   }

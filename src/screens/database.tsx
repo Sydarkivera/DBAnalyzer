@@ -101,9 +101,53 @@ class DatabaseScreen extends Component<PropsType> {
     if (!struture || struture.loading) {
       return <p>Loading, please wait</p>;
     }
+
+    const datatypes: {[id: string]: number} = {};
+    for (let i = 0; i < struture.tables.length; i++) {
+      const table = struture.tables[i];
+      for (let j = 0; j < table.columns.length; j++) {
+        const column = table.columns[j];
+        if (datatypes[column.dataType]) {
+          datatypes[column.dataType] += 1;
+        } else {
+          datatypes[column.dataType] = 1;
+        }
+      }
+    }
+    // console.log(datatypes);
+
     return (
       <>
         <div className="list">
+          <ExpandableListItem title="Database info" isReady={false} isRunning={false} isComplete={false}>
+            <p>
+              Number of tables:
+              {' '}
+              {struture.numTables}
+            </p>
+            <p>
+              Empty tables:
+              {' '}
+              {struture.numEmpty}
+            </p>
+            <p>
+              Total number of columns:
+              {' '}
+              {struture.tables.reduce((reducer, item) => reducer + item.columns.length, 0)}
+            </p>
+            <ExpandableListItem title="Datatypes" isReady={false} isRunning={false} isComplete={false}>
+              {/* {datatypes.map((table) => table.tableName).join(', ')} */}
+              {
+                Object.keys(datatypes).map((key) => (
+                  <p key={key}>
+                    {key}
+                    {': '}
+                    {datatypes[key]}
+                  </p>
+                ))
+              }
+            </ExpandableListItem>
+          </ExpandableListItem>
           <ExpandableListItem title="Structure analysis" isRunning={struture.isRunning} isReady={step < 5} isComplete={step >= 5} onClick={() => struture.startStructureAnalysis(0, false)}>
             <p>
               The database has
@@ -141,7 +185,6 @@ class DatabaseScreen extends Component<PropsType> {
               )}
           </ExpandableListItem>
           <ExpandableListItem title="Culling analysis" isRunning={false} isReady={step >= 5 && aStep < 4} isComplete={aStep >= 4} onClick={() => struture.startCulling(0)}>
-            <p>Culling info...</p>
             {aStep >= 4 && <p>Done</p>}
             {aStep >= 4
               && (
@@ -176,7 +219,164 @@ class DatabaseScreen extends Component<PropsType> {
                 </>
                 )}
           </div>
+          <ExpandableListItem title="Tables that are marked as to be saved" isReady={false} isRunning={false} isComplete={false}>
+            {struture.tables.filter((item) => item.shouldSave !== ShouldSave.No).map((item) => item.tableName).join(', ')}
+          </ExpandableListItem>
         </div>
+      </>
+    );
+  }
+
+  renderColumnSearch() {
+    const { selected } = this.props;
+    const { struture } = selected.connection;
+
+    if (this.searchText === '') {
+      return false;
+    }
+
+    const tablesWithColumn = struture.tables.reduce((reducer: any[], table) => {
+      const foundColumns = table.columns.filter((column) => column.columnName.toUpperCase().search(this.searchText.toUpperCase()) > -1).map((column) => column.columnName);
+      // console.log(foundColumns);
+      if (foundColumns.length > 0) {
+        // console.log(foundColumns);
+
+        return [...reducer, {
+          tableName: table.tableName,
+          columns: foundColumns,
+          table,
+        }];
+      }
+      return reducer;
+    }, []);
+    // console.log(tablesWithColumn.map((table) => `${table.tableName} - ${table.columns.join(', ')}`));
+
+    if (tablesWithColumn.length <= 0) {
+      return null;
+    }
+
+    return (
+      <>
+        <h2 style={{ fontWeight: 'bold' }}>Table with matching columnNames</h2>
+        <table className="table is-hoverable is-fullwidth">
+          <thead>
+            <tr>
+              <th>Table name</th>
+              <th>Matching columns</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tablesWithColumn.length > 0
+          && tablesWithColumn.map((table) => {
+            // console.log(table);
+
+            const res = [
+              (
+                <tr key={table.id} className="table-item" onClick={() => this.selectTable(table.table)}>
+                  <td rowSpan={table.columns.length}>{table.tableName}</td>
+                  <td>
+                    {table.columns[0]}
+                  </td>
+                </tr>
+              ),
+            ];
+
+            for (let i = 1; i < table.columns.length; i++) {
+              res.push((
+                <tr key={table.id} className="table-item" onClick={() => this.selectTable(table.table)}>
+                  <td>
+                    {table.columns[i]}
+                  </td>
+                </tr>
+              ));
+            }
+
+            return res;
+          })}
+          </tbody>
+        </table>
+
+      </>
+    );
+  }
+
+  renderDataTypeSearch() {
+    const { selected } = this.props;
+    const { struture } = selected.connection;
+
+    if (this.searchText === '') {
+      return false;
+    }
+
+    const tablesWithColumn = struture.tables.reduce((reducer: any[], table) => {
+      const foundColumns = table.columns
+        .filter((column) => column.dataType.toUpperCase().search(this.searchText.toUpperCase()) > -1)
+        .map((column) => ({ dataType: column.dataType, columnName: column.columnName }));
+      // console.log(foundColumns);
+      if (foundColumns.length > 0) {
+        // console.log(foundColumns);
+
+        return [...reducer, {
+          tableName: table.tableName,
+          columns: foundColumns,
+          table,
+        }];
+      }
+      return reducer;
+    }, []);
+
+    if (tablesWithColumn.length <= 0) {
+      return null;
+    }
+
+    return (
+      <>
+        <h2 style={{ fontWeight: 'bold' }}>Table with matching data types</h2>
+        <table className="table is-hoverable is-fullwidth">
+          <thead>
+            <tr>
+              <th>Table name</th>
+              <th>Column</th>
+              <th>Datatype</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tablesWithColumn.length > 0
+          && tablesWithColumn.map((table) => {
+            // console.log(table);
+
+            const res = [
+              (
+                <tr key={table.id} className="table-item" onClick={() => this.selectTable(table.table)}>
+                  <td rowSpan={table.columns.length}>{table.tableName}</td>
+                  <td>
+                    {table.columns[0].columnName}
+                  </td>
+                  <td>
+                    {table.columns[0].dataType}
+                  </td>
+                </tr>
+              ),
+            ];
+
+            for (let i = 1; i < table.columns.length; i++) {
+              res.push((
+                <tr key={table.id} className="table-item" onClick={() => this.selectTable(table.table)}>
+                  <td>
+                    {table.columns[i].columnName}
+                  </td>
+                  <td>
+                    {table.columns[i].dataType}
+                  </td>
+                </tr>
+              ));
+            }
+
+            return res;
+          })}
+          </tbody>
+        </table>
+
       </>
     );
   }
@@ -191,6 +391,7 @@ class DatabaseScreen extends Component<PropsType> {
       }
       return 1;
     });
+
     if (this.searchText !== '') {
       tablesSorted = tablesSorted.filter(
         (item) => item.tableName.toUpperCase().search(this.searchText.toUpperCase())
@@ -241,6 +442,8 @@ class DatabaseScreen extends Component<PropsType> {
             }
           </tbody>
         </table>
+        {this.renderColumnSearch()}
+        {this.renderDataTypeSearch()}
       </div>
     );
   }

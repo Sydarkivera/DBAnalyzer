@@ -16,7 +16,8 @@ const ExpandableListItem = ({
 }: Props) => {
   const [expanded, setExpanded] = useState(false);
 
-  const expandRow = () => {
+  const expandRow = (e: MouseEvent) => {
+    e.stopPropagation();
     setExpanded(!expanded);
   };
 
@@ -32,7 +33,7 @@ const ExpandableListItem = ({
     <div className="list-item" onClick={expandRow}>
       <div style={{ flexDirection: 'row', display: 'flex', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-          {isComplete && <FaCheck />}
+          {isComplete && <FaCheck style={{ marginRight: 10 }} />}
           <p style={{ fontWeight: 'bold' }}>{title}</p>
           {isReady && onClick !== undefined && !isRunning && (
           <button

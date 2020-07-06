@@ -5,7 +5,8 @@ import { ShouldSave } from '../store/Table';
 
 interface PropTypes {
   onChange: Function,
-  shouldSave: any
+  shouldSave: any,
+  style?: any
 }
 
 @observer
@@ -35,22 +36,22 @@ class ShouldSaveButton extends Component<PropTypes> {
   };
 
   render() {
-    const { shouldSave } = this.props;
+    const { shouldSave, style } = this.props;
     // console.log(this.props.shouldSave);
     switch (shouldSave) {
       case ShouldSave.No:
-        return <FaRegCircle style={{ color: 'red' }} onClick={this.onChange} />;
+        return <FaRegCircle style={{ color: 'red', ...style }} onClick={this.onChange} />;
       case ShouldSave.Undecided:
         return (
           <FaRegCheckCircle
-            style={{ color: 'gold' }}
+            style={{ color: 'gold', ...style }}
             onClick={this.onChange}
           />
         );
       case ShouldSave.Yes:
         return (
           <FaRegCheckCircle
-            style={{ color: 'green' }}
+            style={{ color: 'green', ...style }}
             onClick={this.onChange}
           />
         );
