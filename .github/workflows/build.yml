@@ -64,7 +64,7 @@ jobs:
         with:
           file: "./build_os/*"
           tags: true
-          draft: true
+          draft: false
       # - name: Upload binaries to release
       #   uses: svenstaro/upload-release-action@v2
       #   with:
