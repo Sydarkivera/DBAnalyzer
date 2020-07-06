@@ -172,7 +172,7 @@ class TableComponent extends Component<PropsType> {
     if (selectForeignKey) {
       selectForeignKey(item);
     } else {
-      console.log(item.pkTable, item.table);
+      // console.log(item.pkTable, item.table);
     }
   }
 

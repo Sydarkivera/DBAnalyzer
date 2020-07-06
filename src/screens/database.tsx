@@ -421,6 +421,7 @@ class DatabaseScreen extends Component<PropsType> {
               <th style={{ maxWidth: 0 }}>Should save</th>
               <th>Table name</th>
               <th>Number of rows</th>
+              <th>Number of columns</th>
             </tr>
           </thead>
           <tbody>
@@ -436,6 +437,9 @@ class DatabaseScreen extends Component<PropsType> {
                   <td onClick={() => this.selectTable(table)}>{table.tableName}</td>
                   <td>
                     {table.rowCount || 0}
+                  </td>
+                  <td>
+                    {table.columns.length}
                   </td>
                 </tr>
               ))

@@ -31,7 +31,7 @@ class ShouldSaveButton extends Component<PropTypes> {
         default:
       }
     } else {
-      console.log('BUtotn changed but missing onChange props');
+      // console.log('BUtotn changed but missing onChange props');
     }
   };
 
