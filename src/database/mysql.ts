@@ -184,13 +184,13 @@ TABLE_NAME = '${tableName}' AND CONSTRAINT_NAME != 'PRIMARY' AND REFERENCED_TABL
 async function checkIfColumnIsNull(connectionData: ConnectionData, tableName: string, columnName: string): Promise<any[]> {
   const con: Connection = await connect(connectionData);
   return new Promise((resolve, reject) => con.query(
-    `SELECT ${
+    `SELECT \`${
       columnName
-    } FROM \`${
+    }\` FROM \`${
       tableName
-    }\` WHERE ${
+    }\` WHERE \`${
       columnName
-    } IS NOT NULL AND ${columnName} != '' LIMIT 1`,
+    }\` IS NOT NULL AND \`${columnName}\` != '' LIMIT 1`,
     (error, results, fields) => {
       // console.log(error, results, fields);
 

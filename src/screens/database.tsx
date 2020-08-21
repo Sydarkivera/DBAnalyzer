@@ -148,7 +148,7 @@ class DatabaseScreen extends Component<PropsType> {
               }
             </ExpandableListItem>
           </ExpandableListItem>
-          <ExpandableListItem title="Structure analysis" isRunning={struture.isRunning} isReady={step < 5} isComplete={step >= 5} onClick={() => struture.startStructureAnalysis(0, false)}>
+          <ExpandableListItem title="Structure analysis" isRunning={struture.isRunning} isReady={step < 5} isComplete={step >= 5} onClick={() => struture.startStructureAnalysis(0, true)}>
             <p>
               The database has
               {' '}

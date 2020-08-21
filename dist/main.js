@@ -130,7 +130,9 @@ function createWindow() {
   log.info('crating window'); // and load the index.html of the app.
 
   if (isDev) {
-    mainWindow.loadURL('http://localhost:4000');
+    mainWindow.loadURL('http://localhost:4000'); // Open the DevTools.
+
+    mainWindow.webContents.openDevTools();
   } else {
     log.info(__dirname, path.join(app.getAppPath(), 'dist/index.html'), app.getAppPath());
     fs.readdir(app.getAppPath(), function (err, files) {
@@ -143,10 +145,8 @@ function createWindow() {
       });
     });
     mainWindow.loadURL("file://".concat(path.join(app.getAppPath(), 'dist/index.html')));
-  } // Open the DevTools.
+  } // Emitted when the window is closed.
 
-
-  mainWindow.webContents.openDevTools(); // Emitted when the window is closed.
 
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows

@@ -55,6 +55,9 @@ export default class DatabaseStructureStore {
 
   @observable likelinessThreshold = 0.8;
 
+  @observable candidateKeyProgress: string[] = []
+  @observable foreignKeyProgress: string[] = []
+
   connection: ConnectionStore;
 
   errorStore: ErrorStore
@@ -102,6 +105,8 @@ export default class DatabaseStructureStore {
       this.structureStep = data.structureStep;
       this.analysisStep = data.analysisStep;
       this.tablesToVerify = data.tablesToVerify;
+      this.candidateKeyProgress = data.candidateKeyProgress || [];
+      this.foreignKeyProgress = data.foreignKeyProgress || [];
       for (const index in data.tables) {
         // console.log(data.tables[index]);
 
@@ -130,6 +135,8 @@ export default class DatabaseStructureStore {
     return {
       structureStep: this.structureStep,
       analysisStep: this.analysisStep,
+      candidateKeyProgress: this.candidateKeyProgress,
+      foreignKeyProgress: this.foreignKeyProgress,
       tablesToVerify: this.tablesToVerify,
       tables: this.tables.map((table) => table.id),
     };
@@ -372,7 +379,7 @@ export default class DatabaseStructureStore {
     let i = 0;
     for (const key in this.tables) {
       const table = this.tables[key];
-      if (table.rowCount > 0) {
+      if (!this.candidateKeyProgress.includes(key) && table.rowCount > 0) {
         try {
           await table.findCandidateKeys();
         } catch (e) {
@@ -381,8 +388,10 @@ export default class DatabaseStructureStore {
         }
         // this.tableCandidateKeysLoaded += 1;
       }
+      this.candidateKeyProgress.push(key);
       i++;
       this.progress = i / this.tables.length;
+      this.saveData()
     }
     return true;
   }
@@ -400,7 +409,7 @@ export default class DatabaseStructureStore {
 
     for (const key in this.tables) {
       const table = this.tables[key];
-      if (table.rowCount > 0) {
+      if (!this.foreignKeyProgress.includes(key) && table.rowCount > 0) {
         try {
           await table.findForeignKeys(this.tables);
         } catch (e) {
@@ -409,8 +418,10 @@ export default class DatabaseStructureStore {
         }
         // this.tableForeignKeysLoaded += 1;
       }
+      this.foreignKeyProgress.push(key);
       i++;
       this.progress = i / this.tables.length;
+      this.saveData()
     }
     return true;
   }
