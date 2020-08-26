@@ -2,21 +2,21 @@ import { ColumnStructure } from '../database/structures';
 
 const mssql = window.require('mssql');
 
-export function getSQLColumnsFromList(array: ColumnStructure[]) {
-  let columns = '"';
+export function getSQLColumnsFromList(array: ColumnStructure[], divider = '"') {
+  let columns = divider;
   for (let j = 0; j < array.length - 1; j++) {
-    columns += `${array[j].columnName}",\n "`;
+    columns += `${array[j].columnName}${divider},\n ${divider}`;
   }
-  columns += `${array[array.length - 1].columnName}"`;
+  columns += `${array[array.length - 1].columnName}${divider}`;
   return columns;
 }
 
-export function getSQLNotNULLFromList(array: ColumnStructure[]) {
-  let columns = '"';
+export function getSQLNotNULLFromList(array: ColumnStructure[], divider = '"') {
+  let columns = divider;
   for (let j = 0; j < array.length - 1; j++) {
-    columns += `${array[j].columnName}" IS NOT NULL AND\n "`;
+    columns += `${array[j].columnName}${divider} IS NOT NULL AND\n ${divider}`;
   }
-  columns += `${array[array.length - 1].columnName}" IS NOT NULL`;
+  columns += `${array[array.length - 1].columnName}${divider} IS NOT NULL`;
   return columns;
 }
 

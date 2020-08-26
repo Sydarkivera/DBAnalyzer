@@ -263,30 +263,92 @@ async function countUniqueRows(connectionData: ConnectionData, tableName: string
 async function testIfValuesInColumnExistInOtherTable(connectionData: ConnectionData, candidateTable: string, candidateColumn: string, foreignTable: string, foreignColumn: string): Promise<boolean> {
   const con: Connection = await connect(connectionData);
 
+  // const correct = await new Promise((resolve, reject) => con.query(
+  //   // DISTINCT can't be used since it is has bugs in multiple versions of
+  //   // // Mysql where it returns a slightly incorrect value.
+  //   `IF EXISTS ( SELECT \`${
+  //     foreignColumn
+  //   }\` FROM \`${
+  //     foreignTable
+  //   }\` WHERE \`${
+  //     foreignColumn
+  //   }\` IS NOT NULL EXCEPT SELECT "${
+  //     candidateColumn
+  //   }" FROM \`${
+  //     candidateTable
+  //   }\` ) Then SELECT "exists" as res; ELSE SELECT "no does not exist" as res; END IF`,
+  //   // `SELECT \`${foreignColumn}\` FROM \`${foreignTable}\` WHERE NOT EXISTS(
+  //   //   SELECT "${candidateColumn}" FROM \`${candidateTable}\`
+  //   // ) `,
+  //   (error, results, fields) => {
+  //     // console.log(error, results, fields);
+  //     // console.log('old exists: ', results[0][0].res === 'exists');
+
+  //     // console.log(correct);
+
+  //     // reject('Some error');
+
+  //     // return {error, results, fields}
+  //     if (error) {
+  //       reject(error);
+  //     } else {
+  //       // console.log(results[0][0]);
+
+  //       // resolve(results[0][0].res === 'exists');
+  //       resolve(results.length > 0);
+  //       // resolve(0);
+  //     }
+  //     con.end();
+  //   },
+  // ));
+
+  // con = await connect(connectionData);
+
+  const queryString = `SELECT \`${
+    foreignColumn
+  }\` FROM \`${
+    foreignTable
+  }\` WHERE \`${
+    foreignColumn
+  }\` IS NOT NULL AND \`${
+    foreignColumn
+  }\` NOT IN (SELECT \`${
+    candidateColumn
+  }\` FROM \`${
+    candidateTable
+  }\`) `;
+
   return new Promise((resolve, reject) => con.query(
     // DISTINCT can't be used since it is has bugs in multiple versions of
-    // Mysql where it returns a slightly incorrect value.
-    `IF NOT EXISTS ( SELECT "${
-      foreignColumn
-    }" FROM \`${
-      foreignTable
-    }\` WHERE "${
-      foreignColumn
-    }" IS NOT NULL EXCEPT SELECT "${
-      candidateColumn
-    }" FROM \`${
-      candidateTable
-    }\` ) Then SELECT "exists" as res; ELSE SELECT "no does not exist" as res; END IF`,
+    // // Mysql where it returns a slightly incorrect value.
+    queryString,
+    // `SELECT IF (SELECT \`${foreignColumn}\` FROM \`${foreignTable}\` WHERE NOT EXISTS(
+    //   SELECT "${candidateColumn}" FROM \`${candidateTable}\`
+    // ), "exists", "Not exists") `,
+    // `SELECT *
+    // FROM \`${candidateTable}\` TB
+    // LEFT JOIN \`${foreignTable}\` TA
+    // ON TB.\`${candidateColumn}\`=TA.\`${foreignColumn}\`
+    // WHERE TA.\`${foreignColumn}\` IS NULL LIMIT 1`,
     (error, results, fields) => {
       // console.log(error, results, fields);
+      // console.log(correct);
+
+      // reject('Some error');
 
       // return {error, results, fields}
       if (error) {
+        console.log(queryString);
+
         reject(error);
       } else {
-        // console.log(results[0][0]);
+        if (results.length <= 0) {
+          console.log(`all values of ${foreignTable}.${foreignColumn} does not exist in ${candidateTable}.${candidateColumn}`);
+        }
+        // console.log('new exists: ', results.length > 0);
 
-        resolve(results[0][0].res === 'exists');
+        // resolve(results[0][0].res === 'exists');
+        resolve(results.length <= 0);
         // resolve(0);
       }
       con.end();
@@ -297,30 +359,46 @@ async function testIfValuesInColumnExistInOtherTable(connectionData: ConnectionD
 async function testIfForeignKey(connectionData: ConnectionData, candidateTable: string, candidateColumns: ColumnStructure[], foreignTable: string, foreignColumns: ColumnStructure[]): Promise<boolean> {
   const con: Connection = await connect(connectionData);
 
+  const queryString = `SELECT ${
+    getSQLColumnsFromList(foreignColumns, '`')
+  } FROM \`${
+    foreignTable
+  }\` WHERE (${
+    getSQLColumnsFromList(foreignColumns, '`')
+  }) NOT IN (SELECT ${
+    getSQLColumnsFromList(candidateColumns, '`')
+  } FROM \`${
+    candidateTable
+  }\`) `;
+
   return new Promise((resolve, reject) => con.query(
     // DISTINCT can't be used since it is has bugs in multiple versions of
     // Mysql where it returns a slightly incorrect value.
-    `IF NOT EXISTS \n( SELECT\n ${
-      getSQLColumnsFromList(foreignColumns)
-    } FROM \`${
-      foreignTable
-    }\` WHERE\n ${
-      getSQLNotNULLFromList(foreignColumns)
-    } \nEXCEPT SELECT ${
-      getSQLColumnsFromList(candidateColumns)
-    } FROM \`${
-      candidateTable
-    }\` ) \n THEN SELECT 'exists' as res; ELSE SELECT 'not' as res; END IF`,
+    // `IF NOT EXISTS \n( SELECT\n ${
+    //   getSQLColumnsFromList(foreignColumns, '`')
+    // } FROM \`${
+    //   foreignTable
+    // }\` WHERE\n ${
+    //   getSQLNotNULLFromList(foreignColumns, '`')
+    // } \nEXCEPT SELECT ${
+    //   getSQLColumnsFromList(candidateColumns, '`')
+    // } FROM \`${
+    //   candidateTable
+    // }\` ) \n THEN SELECT 'exists' as res; ELSE SELECT 'not' as res; END IF`,
+    queryString,
     (error, results, fields) => {
       // console.log(error, results, fields);
 
       // return {error, results, fields}
       if (error) {
+        console.log(queryString);
+
         reject(error);
       } else {
         // console.log(results[0]);
 
-        resolve(results[0][0].res === 'exists');
+        // resolve(results[0][0].res === 'exists');
+        resolve(results.length <= 0);
         // resolve(0);
       }
       con.end();

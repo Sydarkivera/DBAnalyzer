@@ -7,7 +7,7 @@ import { ForeignKeyStructure, ColumnStructure } from '../database/structures';
 // import DatabaseStructureStore from './DatabaseStructure';
 import ConnectionStore from './Connection';
 import { permutations, removeDoubles, testKeyLikeliness } from '../functions/permutations';
-// import { getSQLColumnsFromList } from '../functions/sql';
+import { getSQLColumnsFromList } from '../functions/sql';
 import ErrorStore from './ErrorStore';
 
 const FileStore = window.require('electron-store');
@@ -252,7 +252,7 @@ export default class TableStore {
   }
 
   async testCombinationsAlternative(array: any[], tableCount: number) {
-    console.log(this.candidateProgress);
+    // console.log(this.candidateProgress);
 
     // console.log(array);
     // start with all, then remove one at a time until it is no longer distinct.
@@ -301,12 +301,12 @@ export default class TableStore {
     if (columns.length <= 0) {
       return false;
     }
-    console.log('test if any combination is possible', this.candidateProgress);
+    // console.log('test if any combination is possible', this.candidateProgress);
 
     this.candidateProgress += 1;
     const uniqueRows = await DatabaseManager
       .countUniqueRows(this.connection, this.tableName, columns);
-    console.log('test done');
+    // console.log('test done');
 
     if (uniqueRows === tableCount) {
       return true;
@@ -423,16 +423,16 @@ export default class TableStore {
                       pkColumn: key[j].columnName,
                     })),
                   }];
-                  // console.log(
-                  //   'Foreign key found. PKTable: ',
-                  //   this.tableName,
-                  //   ', PKColumns: ',
-                  //   getSQLColumnsFromList(key),
-                  //   'FKTable: ',
-                  //   table.tableName,
-                  //   ', FKColumns: ',
-                  //   getSQLColumnsFromList(perms[i]),
-                  // );
+                  console.log(
+                    'Foreign key found. PKTable: ',
+                    this.tableName,
+                    ', PKColumns: ',
+                    getSQLColumnsFromList(key),
+                    'FKTable: ',
+                    table.tableName,
+                    ', FKColumns: ',
+                    getSQLColumnsFromList(perms[i]),
+                  );
                 }
               }
             }

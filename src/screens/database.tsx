@@ -178,7 +178,7 @@ class DatabaseScreen extends Component<PropsType> {
               <button
                 className="button is-danger"
                 type="button"
-                onClick={(e) => { struture.analysisStep = 0; struture.structureStep = 0; struture.startStructureAnalysis(0, false); e.stopPropagation(); }}
+                onClick={(e) => { struture.analysisStep = 0; struture.structureStep = 0; struture.candidateKeyProgress = []; struture.foreignKeyProgress = []; struture.startStructureAnalysis(0, false); e.stopPropagation(); }}
               >
                 Run again
               </button>
