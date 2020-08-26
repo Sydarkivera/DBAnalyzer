@@ -56,6 +56,7 @@ export default class DatabaseStructureStore {
   @observable likelinessThreshold = 0.8;
 
   @observable candidateKeyProgress: string[] = []
+
   @observable foreignKeyProgress: string[] = []
 
   connection: ConnectionStore;
@@ -117,6 +118,15 @@ export default class DatabaseStructureStore {
       // console.log(this.tables);
     }
     // console.log(this.tables);
+    this.tables.forEach((table) => {
+      if (table.tableName === 'dtproperties') {
+        // console.log(table);
+        // const { columns } = table;
+        table.columns = [];
+        table.fetchColumns();
+        // table.columns = columns;
+      }
+    });
   }
 
   saveData() {
@@ -391,7 +401,7 @@ export default class DatabaseStructureStore {
       this.candidateKeyProgress.push(key);
       i++;
       this.progress = i / this.tables.length;
-      this.saveData()
+      this.saveData();
     }
     return true;
   }
@@ -421,7 +431,7 @@ export default class DatabaseStructureStore {
       this.foreignKeyProgress.push(key);
       i++;
       this.progress = i / this.tables.length;
-      this.saveData()
+      this.saveData();
     }
     return true;
   }

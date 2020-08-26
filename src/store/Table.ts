@@ -40,7 +40,9 @@ export default class TableStore {
 
   @observable shouldSave = ShouldSave.Undecided;
 
-      @observable autoSave = true;
+  @observable autoSave = true;
+
+  candidateProgress = 0;
 
   connection: ConnectionStore;
 
@@ -125,6 +127,8 @@ export default class TableStore {
     const columns = await DatabaseManager
       .fetchColumns(this.connection.connectionData, this.tableName);
 
+    // console.log(this.tableName, columns);
+
     this.primaryKeys = await DatabaseManager
       .fetchPrimaryKeys(this.connection.connectionData, this.tableName);
 
@@ -201,7 +205,10 @@ export default class TableStore {
   // ------------------ (( Finding potential candidate keys )) ------------------------ //
 
   async findCandidateKeys() {
+    console.log(`finding candidate keys for ${this.tableName}`);
+
     const possibleColumns = [];
+    this.candidateProgress = 0;
     const { columns } = this;
     let index;
     // if (!this.candidateKeys) {
@@ -226,6 +233,11 @@ export default class TableStore {
     }
 
     const rowCount = await DatabaseManager.countNumberofRows(this.connection, this.tableName);
+    let possibilities = possibleColumns.length;
+    for (let i = 1; i < possibleColumns.length; i++) {
+      possibilities += i;
+    }
+    console.log('maximum possible tests for candidate keys: ', possibilities);
 
     // let tcRes = await executeSQLQuery(
     //   "SELECT COUNT(*) as count FROM [" + this.tableName + "]"
@@ -240,6 +252,8 @@ export default class TableStore {
   }
 
   async testCombinationsAlternative(array: any[], tableCount: number) {
+    console.log(this.candidateProgress);
+
     // console.log(array);
     // start with all, then remove one at a time until it is no longer distinct.
     let res = await this.testIfAnyCombinationIsPossible(array, tableCount);
@@ -287,8 +301,13 @@ export default class TableStore {
     if (columns.length <= 0) {
       return false;
     }
+    console.log('test if any combination is possible', this.candidateProgress);
+
+    this.candidateProgress += 1;
     const uniqueRows = await DatabaseManager
       .countUniqueRows(this.connection, this.tableName, columns);
+    console.log('test done');
+
     if (uniqueRows === tableCount) {
       return true;
     }

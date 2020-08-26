@@ -65,7 +65,7 @@ async function fetchColumns(connectionData: ConnectionData, tableName: string) {
   return new Promise((resolve, reject) => con.query(
     `SELECT * FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='${
       tableName
-    }'`,
+    }' AND TABLE_SCHEMA='${connectionData.database}'`,
     (error, results, fields) => {
       // console.log(error, results, fields);
 
