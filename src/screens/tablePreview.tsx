@@ -36,6 +36,13 @@ class TablePreviewScreen extends Component<PropsType> {
   constructor(props: PropsType) {
     super(props);
 
+    if (!props.selected.connection.struture) {
+      props.selected.connection.loadDatabaseStructure();
+    }
+    if (props.selected.connection.struture) {
+      props.selected.connection.struture.fetchAllTables();
+    }
+
     if (props.selected.table) {
       props.selected.table.fetchColumns().then(() => {
       });
@@ -131,6 +138,9 @@ class TablePreviewScreen extends Component<PropsType> {
 
   render() {
     const { selected } = this.props;
+    if (!selected.connection.struture) {
+      return null;
+    }
     // console.log(this.props.selectedStore.table.foreignKeys);
 
     // sort out all foreign keys linking to this.

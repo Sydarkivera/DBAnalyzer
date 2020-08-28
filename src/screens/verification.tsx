@@ -4,6 +4,7 @@ import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
 import '../App.css';
 import SelectedStore from 'src/store/Selected';
+import TableComponent from '../components/table';
 import VerifyTable from '../components/verifyTable';
 
 interface PropType {
@@ -43,15 +44,21 @@ class TableVerificationScreen extends Component<PropType> {
 
   @observable popupTable: any = undefined;
 
-  // constructor(props: PropType) {
-  //   super(props);
+  constructor(props: PropType) {
+    super(props);
 
-  // props.selected.connection.fetchDatabaseStrucutre();
+    // props.selected.connection.fetchDatabaseStrucutre();
 
-  // setTimeout(() => {
-  //   this.loadAllData();
-  // }, 10);
-  // }
+    // setTimeout(() => {
+    //   this.loadAllData();
+    // }, 10);
+    if (!props.selected.connection.struture) {
+      props.selected.connection.loadDatabaseStructure();
+    }
+    if (props.selected.connection.struture) {
+      props.selected.connection.struture.fetchAllTables();
+    }
+  }
 
   // async loadAllData() {
   //   await this.loadTables();
@@ -78,40 +85,48 @@ class TableVerificationScreen extends Component<PropType> {
     }
   }
 
-  // renderPopup() {
-  // if (
-  //   !this.popupTable ||
-  //   !this.props.selected.connection.struture.saveDataLoaded
-  // ) {
-  //   return null;
-  // } else {
-  //   return (
-  //     <div className="popup">
-  //       <p
-  //         onClick={() => {
-  //           this.popupTable = undefined;
-  //         }}
-  //       >
-  //         Close
-  //       </p>
-  //       <p>{this.popupTable}</p>
-  //       <Table
-  //         table={this.props.selectedStore.connection.databaseStructure.findTable(
-  //           this.popupTable
-  //         )}
-  //         structure={struture}
-  //         highlightColumns={this.poppupColumns}
-  //         selectForeignKey={(key:any) => this.selectForeignKey(key)}
-  //       />
-  //     </div>
-  //   );
-  // }
+  renderPopup() {
+    const { selected } = this.props;
+    if (
+      !this.popupTable
+    || !selected.connection.struture
+    ) {
+      return null;
+    }
 
-  // }
+    return (
+      <div className="modal is-active">
+        <div className="modal-background" onClick={() => { this.popupTable = ''; }} />
+        <div className="modal-content" style={{ width: '90%' }}>
+
+          {/* <p
+            onClick={() => {
+              this.popupTable = undefined;
+            }}
+          >
+            Close
+          </p> */}
+          {/* <p>{this.popupTable}</p> */}
+          <TableComponent
+            table={selected.connection.struture.getTableByName(
+              this.popupTable,
+            )}
+            structure={selected.connection.struture}
+            highlightColumns={this.poppupColumns}
+            selectForeignKey={(key:any) => this.selectForeignKey(key)}
+          />
+        </div>
+        <button type="button" className="modal-close is-large" aria-label="close" onClick={() => { this.popupTable = ''; }} />
+      </div>
+    );
+  }
 
   renderSmallList() {
     const { selected } = this.props;
     const { struture } = selected.connection;
+    if (!struture) {
+      return null;
+    }
     let id = 0;
 
     return (
@@ -134,6 +149,9 @@ class TableVerificationScreen extends Component<PropType> {
   renderNoConnections() {
     const { selected } = this.props;
     const { struture } = selected.connection;
+    if (!struture) {
+      return null;
+    }
     let id = 0;
 
     return (
@@ -156,6 +174,9 @@ class TableVerificationScreen extends Component<PropType> {
   renderFewConnections() {
     const { selected } = this.props;
     const { struture } = selected.connection;
+    if (!struture) {
+      return null;
+    }
     let id = 0;
 
     return (
@@ -204,7 +225,7 @@ class TableVerificationScreen extends Component<PropType> {
           {this.renderSmallList()}
           {this.renderNoConnections()}
           {this.renderFewConnections()}
-          {/* {this.renderPopup()} */}
+          {this.renderPopup()}
         </div>
       </div>
     );

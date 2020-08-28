@@ -12,4 +12,4 @@ Then you need to start react with `npm run dev:react`
 And in another window you start electron with `npm run dev:electron`
 
 ## User guide
-The user guide is located at [User guide](https://github.com/Sydarkivera/DBAnalyzer/userGuide.md).
+The user guide is located at [User guide](https://github.com/Sydarkivera/DBAnalyzer/blob/master/userGuide.md).

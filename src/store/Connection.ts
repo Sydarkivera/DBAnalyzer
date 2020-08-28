@@ -29,7 +29,7 @@ export default class ConnectionStore {
 
   @observable id: string = '';
 
-  @observable struture: DatabaseStructureStore;
+  @observable struture?: DatabaseStructureStore ;
 
   @observable label = '';
 
@@ -44,7 +44,7 @@ export default class ConnectionStore {
       // give id
       this.id = uuid();
     }
-    this.struture = new DatabaseStructureStore(this, this.errorStore, id);
+    // this.struture = new DatabaseStructureStore(this, this.errorStore, id);
   }
 
   @computed get connectionData(): ConnectionData {
@@ -73,6 +73,12 @@ export default class ConnectionStore {
       console.error(e);
     }
   };
+
+  @action loadDatabaseStructure() {
+    if (!this.struture) {
+      this.struture = new DatabaseStructureStore(this, this.errorStore, this.id);
+    }
+  }
 
   @action
   loadSavedData = async (id: string) => {

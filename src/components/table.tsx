@@ -104,6 +104,7 @@ class TableComponent extends Component<PropsType> {
       'mediumint',
       'enum',
       'set',
+      'double',
     ];
     for (const i in table.data) {
       const row = table.data[i];
@@ -117,14 +118,19 @@ class TableComponent extends Component<PropsType> {
 
           tempData.push(d.toDateString());
         } else if (type === 'bit') {
+          // console.log(row[columns[index].columnName]);
+
           if (row[columns[index].columnName].length > 10) {
             tempData.push('binary');
           } else {
-            let s = '';
-            for (const si in row[columns[index].columnName]) {
-              s += row[columns[index].columnName][si];
-            }
-            tempData.push(`'${s}'`);
+            const s = '';
+            // for (const si in row[columns[index].columnName]) {
+            //   console.log(si);
+
+            //   s += row[columns[index].columnName][si];
+            // }
+            // tempData.push(`'${s.toString()}'`);
+            tempData.push(row[columns[index].columnName]);
           }
         } else if (type === 'varbinary') {
           // tempData.push(

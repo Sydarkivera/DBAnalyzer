@@ -183,13 +183,17 @@ export default class DatabaseStructureStore {
   }
 
   async fetchAllTables() {
-    // console.log('fetch all tables');
+    console.log('fetch all tables');
+    console.log(this.tables.length);
 
     if (this.tables.length > 0) {
       return;
     }
 
+    console.log('fetching tables');
+
     const result = await DatabaseManager.fetchAllTables(this.connection.connectionData);
+    console.log('resu: ', result);
 
     const tables = [];
     for (const index in result) {

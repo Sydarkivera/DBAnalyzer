@@ -190,7 +190,7 @@ async function checkIfColumnIsNull(connectionData: ConnectionData, tableName: st
       tableName
     }\` WHERE \`${
       columnName
-    }\` IS NOT NULL AND \`${columnName}\` != '' LIMIT 1`,
+    }\` IS NOT NULL AND \`${columnName}\` != '' AND  \`${columnName}\` != 'null' LIMIT 1`,
     (error, results, fields) => {
       // console.log(error, results, fields);
 
@@ -232,24 +232,27 @@ async function countUniqueRows(connectionData: ConnectionData, tableName: string
   const con: Connection = await connect(connectionData);
 
   // calculate column String
-  let columnString = '(';
+  let columnString = '`';
   for (let j = 0; j < columns.length - 1; j++) {
-    columnString += `${columns[j].columnName}), (`;
+    columnString += `${columns[j].columnName}\`, \``;
   }
-  columnString += `${columns[columns.length - 1].columnName})`;
+  columnString += `${columns[columns.length - 1].columnName}\``;
   // columnString += `${columns[0].columnName}`;
 
   // console.log(columnString);
+  const queryString = `SELECT COUNT(*) as count FROM ( SELECT ${columnString} FROM \`${tableName}\` GROUP BY ${columnString} ) as sub`;
 
   return new Promise((resolve, reject) => con.query(
     // DISTINCT can't be used since it is has bugs in multiple
     // versions of Mysql where it returns a slightly incorrect value.
-    `SELECT COUNT(*) as count FROM ( SELECT ${columnString} FROM \`${tableName}\` GROUP BY ${columnString} ) as sub`,
+    queryString,
     (error, results, fields) => {
       // console.log(error, results, fields);
 
       // return {error, results, fields}
       if (error) {
+        console.log(queryString);
+
         reject(error);
       } else {
         resolve(results[0].count);
@@ -316,7 +319,9 @@ async function testIfValuesInColumnExistInOtherTable(connectionData: ConnectionD
     candidateColumn
   }\` FROM \`${
     candidateTable
-  }\`) `;
+  }\` WHERE \`${
+    candidateColumn
+  }\` IS NOT NULL) `;
 
   return new Promise((resolve, reject) => con.query(
     // DISTINCT can't be used since it is has bugs in multiple versions of

@@ -198,6 +198,9 @@ export default class TableStore {
         if (r.length <= 0) {
           column.isNull = true;
         }
+        // else if (this.tableName === 'Diarieanteckningar') {
+        //   console.log(r, column);
+        // }
       }
     }
   }
@@ -252,7 +255,7 @@ export default class TableStore {
   }
 
   async testCombinationsAlternative(array: any[], tableCount: number) {
-    // console.log(this.candidateProgress);
+    console.log(this.candidateProgress);
 
     // console.log(array);
     // start with all, then remove one at a time until it is no longer distinct.
@@ -301,7 +304,7 @@ export default class TableStore {
     if (columns.length <= 0) {
       return false;
     }
-    // console.log('test if any combination is possible', this.candidateProgress);
+    console.log('test if any combination is possible', this.candidateProgress);
 
     this.candidateProgress += 1;
     const uniqueRows = await DatabaseManager
@@ -344,7 +347,7 @@ export default class TableStore {
             for (const columnIndex in table.columns) {
               const column = table.columns[columnIndex];
               // console.log(column);
-              if (column.dataType === keyColumn.dataType) {
+              if (column.dataType === keyColumn.dataType && !column.isNull && !keyColumn.isNull) {
                 pos.push({ ...column });
               }
             }

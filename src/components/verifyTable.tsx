@@ -4,6 +4,7 @@ import ShouldSaveButton from './shouldSaveButton';
 // import "./table.css";
 import './verifyTable.css';
 import TableStore from 'src/store/Table';
+import { observer } from 'mobx-react';
 // import { Selected } from "../store/selected";
 
 // const mssql = window.require("mssql");
@@ -19,7 +20,7 @@ interface PropType {
 }
 
 // @inject("selectedStore")
-// @observer
+@observer
 class VerifyTable extends Component<PropType> {
   constructor(props: PropType) {
     super(props);
@@ -27,19 +28,20 @@ class VerifyTable extends Component<PropType> {
     console.log('ctor');
   }
 
-  saveToggle(tableName: string) {
-    // var table = this.props.selected.connection.struture.findTable(
-    //   tableName
-    // );
-    // table.shouldSave = 0;
-    // if (table.shouldSave === 0) {
-    //   table.shouldSave = 1;
-    // }
-  }
+  // saveToggle(tableName: string) {
+  //   // var table = this.props.selected.connection.struture.findTable(
+  //   //   tableName
+  //   // );
+  //   // table.shouldSave = 0;
+  //   // if (table.shouldSave === 0) {
+  //   //   table.shouldSave = 1;
+  //   // }
+  // }
 
   previewTable(item: any) {
-    if (this.props.previewTable) {
-      this.props.previewTable(item);
+    const { previewTable } = this.props;
+    if (previewTable) {
+      previewTable(item);
     } else {
       console.log('Table pressed: ', item);
     }
@@ -67,20 +69,20 @@ class VerifyTable extends Component<PropType> {
               if (!table) {
                 return null;
               }
-              console.log(table.shouldSave);
+              // console.log(table.shouldSave);
 
               return (
                 <div className="tableRow" key={tableName}>
                   <p
                     onClick={() => {
-                      this.previewTable(item);
+                      this.previewTable(tableName);
                     }}
                   >
                     {tableName}
                   </p>
                   <ShouldSaveButton
                     shouldSave={table.shouldSave}
-                    onChange={(val: any) => (table.shouldSave = val)}
+                    onChange={(val: any) => { table.shouldSave = val; }}
                   />
                 </div>
               );

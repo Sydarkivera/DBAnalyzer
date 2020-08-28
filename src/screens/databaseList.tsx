@@ -117,7 +117,7 @@ class DBSelectScreen extends Component<PropsType> {
                     () => { this.showAddForm = !this.showAddForm; }
                     }
                   >
-                    <strong>New Connection</strong>
+                    <strong>New Database Connection</strong>
                   </button>
                 </div>
               </div>

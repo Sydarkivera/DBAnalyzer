@@ -81,7 +81,7 @@ export default class SelectedStore {
         // console.log(this.connection.databaseStructure);
 
         // console.log(data.tableId);
-        if (this.connection) {
+        if (this.connection && this.connection.struture) {
           this.table = this.connection.struture.getTable(data.tableId);
         }
         // console.log(this.table);

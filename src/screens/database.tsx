@@ -37,7 +37,28 @@ class DatabaseScreen extends Component<PropsType> {
 
     this.formConnection = new ConnectionStore(props.errorStore);
 
-    props.selected.connection.struture.fetchAllTables();
+    // if (!props.selected.connection.struture) {
+    //   props.selected.connection.loadDatabaseStructure();
+    // }
+    // if (props.selected.connection.struture) {
+    //   props.selected.connection.struture.fetchAllTables();
+    // }
+    setTimeout(() => {
+      this.loadInitialData();
+    }, 0.001);
+  }
+
+  async loadInitialData() {
+    return new Promise((resolve, reject) => {
+      const { selected } = this.props;
+      if (!selected.connection.struture) {
+        selected.connection.loadDatabaseStructure();
+      }
+      if (selected.connection.struture) {
+        selected.connection.struture.fetchAllTables();
+      }
+      resolve();
+    });
   }
 
   selectTable(table: TableStore) {
@@ -74,6 +95,9 @@ class DatabaseScreen extends Component<PropsType> {
   calculateVisualParts(currentStep: number, numberOfSteps: number): VisualPart[] {
     const { selected } = this.props;
     const { struture } = selected.connection;
+    if (!struture) {
+      return [];
+    }
 
     const res: VisualPart[] = [];
 
@@ -96,6 +120,9 @@ class DatabaseScreen extends Component<PropsType> {
   renderAnalysisSection() {
     const { selected, history } = this.props;
     const { struture } = selected.connection;
+    if (!struture) {
+      return <p>Loading structure...</p>;
+    }
     const step = struture.structureStep;
     const aStep = struture.analysisStep;
     if (!struture || struture.loading) {
@@ -230,6 +257,9 @@ class DatabaseScreen extends Component<PropsType> {
   renderColumnSearch() {
     const { selected } = this.props;
     const { struture } = selected.connection;
+    if (!struture) {
+      return null;
+    }
 
     if (this.searchText === '') {
       return false;
@@ -303,6 +333,9 @@ class DatabaseScreen extends Component<PropsType> {
   renderDataTypeSearch() {
     const { selected } = this.props;
     const { struture } = selected.connection;
+    if (!struture) {
+      return null;
+    }
 
     if (this.searchText === '') {
       return false;
@@ -384,6 +417,9 @@ class DatabaseScreen extends Component<PropsType> {
   renderTables() {
     const { selected } = this.props;
     const { struture } = selected.connection;
+    if (!struture) {
+      return null;
+    }
 
     let tablesSorted = struture.tables.slice().sort((a, b) => {
       if (a.rowCount > b.rowCount) {
@@ -406,7 +442,7 @@ class DatabaseScreen extends Component<PropsType> {
             <input
               className="input"
               type="email"
-              placeholder="Search"
+              placeholder="Search for tables and columns"
               value={this.searchText}
               onChange={(text) => { this.searchText = text.target.value; }}
             />
@@ -443,6 +479,11 @@ class DatabaseScreen extends Component<PropsType> {
                   </td>
                 </tr>
               ))
+            }
+            {
+              tablesSorted.length === 0 && (
+                <p>Loading tables...</p>
+              )
             }
           </tbody>
         </table>
@@ -485,7 +526,7 @@ class DatabaseScreen extends Component<PropsType> {
                     type="button"
                     onClick={() => { this.openForm(); }}
                   >
-                    <strong>Edit Database</strong>
+                    <strong>Edit Database Connection</strong>
                   </button>
                 </div>
               </div>
