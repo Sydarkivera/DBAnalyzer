@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import ShouldSaveButton from './shouldSaveButton';
+import { observer } from 'mobx-react';
 // import { observable } from "mobx";
+import TableStore from 'src/store/Table';
+import ShouldSaveButton from './shouldSaveButton';
 // import "./table.css";
 import './verifyTable.css';
-import TableStore from 'src/store/Table';
-import { observer } from 'mobx-react';
 // import { Selected } from "../store/selected";
 
 // const mssql = window.require("mssql");
