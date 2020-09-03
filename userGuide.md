@@ -10,7 +10,7 @@ THe application is run by starting the .exe file.
 
 When the application is started the first time on a new computer the initial list will be empty. That is the list of your added databases.
 
-You can add a new database by pressing the "New connection" button in the top right corner of the applicaiton. A form will open where you can enter the connection information.
+You can add a new database by pressing the "New Database Connection" button in the top right corner of the applicaiton. A form will open where you can enter the connection information.
 
 * **Server Label**: This is a name that you choose for the connection.
 * **Server Address**: The IP or domain name for the server containing the database.
