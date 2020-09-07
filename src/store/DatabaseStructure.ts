@@ -41,7 +41,7 @@ export default class DatabaseStructureStore {
 
   @observable tablesToVerify: any[] = [];
 
-  @observable structureStep = 0;
+  @observable structureStep = 1;
 
   @observable analysisStep = 0;
 
@@ -219,6 +219,15 @@ export default class DatabaseStructureStore {
     if (!resume) {
       this.structureStep = 1;
       this.tablesToVerify = [];
+
+      // reset progress
+      for (const key in this.tables) {
+        const table = this.tables[key];
+        if (table.rowCount > 0) {
+          table.foundForeignKeys = [];
+          // this.tableForeignKeysLoaded += 1;
+        }
+      }
     } else {
       start = this.structureStep - 1;
     }
@@ -413,13 +422,13 @@ export default class DatabaseStructureStore {
   async findForeignKeys() {
     // this.tableForeignKeysLoaded = 0;
     let i = 0;
-    for (const key in this.tables) {
-      const table = this.tables[key];
-      if (table.rowCount > 0) {
-        table.foundForeignKeys = [];
-        // this.tableForeignKeysLoaded += 1;
-      }
-    }
+    // for (const key in this.tables) {
+    //   const table = this.tables[key];
+    //   if (table.rowCount > 0) {
+    //     table.foundForeignKeys = [];
+    //     // this.tableForeignKeysLoaded += 1;
+    //   }
+    // }
 
     for (const key in this.tables) {
       const table = this.tables[key];
