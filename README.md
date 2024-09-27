@@ -12,5 +12,3 @@ Run the project in development by first installing the dependencies with `npm in
 
 Then you need to start react with `npm run dev:react`
 And in another window you start electron with `npm run dev:electron`
-
-Test
