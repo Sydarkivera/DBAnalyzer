@@ -47,11 +47,6 @@ class TableVerificationScreen extends Component<PropType> {
   constructor(props: PropType) {
     super(props);
 
-    // props.selected.connection.fetchDatabaseStrucutre();
-
-    // setTimeout(() => {
-    //   this.loadAllData();
-    // }, 10);
     if (!props.selected.connection.struture) {
       props.selected.connection.loadDatabaseStructure();
     }
@@ -60,17 +55,7 @@ class TableVerificationScreen extends Component<PropType> {
     }
   }
 
-  // async loadAllData() {
-  //   await this.loadTables();
-  // }
-
-  // async loadTables() {
-  // this.tables = await this.props.selected.connection.struture.fetchAllTables();
-  // this.loadingTables = false;
-  // }
-
   openPopup(tableName: string) {
-    // console.log(tableName);
     this.popupTable = tableName;
     this.poppupColumns = [];
   }
@@ -98,15 +83,6 @@ class TableVerificationScreen extends Component<PropType> {
       <div className="modal is-active">
         <div className="modal-background" onClick={() => { this.popupTable = ''; }} />
         <div className="modal-content" style={{ width: '90%' }}>
-
-          {/* <p
-            onClick={() => {
-              this.popupTable = undefined;
-            }}
-          >
-            Close
-          </p> */}
-          {/* <p>{this.popupTable}</p> */}
           <TableComponent
             table={selected.connection.struture.getTableByName(
               this.popupTable,
