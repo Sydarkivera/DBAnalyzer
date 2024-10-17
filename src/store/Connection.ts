@@ -44,7 +44,6 @@ export default class ConnectionStore {
       // give id
       this.id = uuid();
     }
-    // this.struture = new DatabaseStructureStore(this, this.errorStore, id);
   }
 
   @computed get connectionData(): ConnectionData {
@@ -84,10 +83,8 @@ export default class ConnectionStore {
   loadSavedData = async (id: string) => {
     try {
       const data: ConnectionData = fileStore.get(`connection_${id}`);
-      // console.log(data);
 
       if (data) {
-        // this.autoSave = false;
         this.server = data.server;
         this.database = data.database;
         this.username = data.username;
@@ -96,9 +93,6 @@ export default class ConnectionStore {
         this.port = data.port;
         this.dbms = data.dbms;
         this.label = data.label;
-        // this.struture = new DatabaseStructureStore(this, this.id);
-        // this.fetchDatabaseStrucutre();
-        // this.autoSave = true;
       }
     } catch (e) {
       console.error(e);
