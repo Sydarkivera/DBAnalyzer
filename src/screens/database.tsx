@@ -30,19 +30,11 @@ class DatabaseScreen extends Component<PropsType> {
 
   @observable formConnection: ConnectionStore
 
-  // state: StateType;
-
   constructor(props: PropsType) {
     super(props);
 
     this.formConnection = new ConnectionStore(props.errorStore);
 
-    // if (!props.selected.connection.struture) {
-    //   props.selected.connection.loadDatabaseStructure();
-    // }
-    // if (props.selected.connection.struture) {
-    //   props.selected.connection.struture.fetchAllTables();
-    // }
     setTimeout(() => {
       this.loadInitialData();
     }, 0.001);
@@ -141,7 +133,6 @@ class DatabaseScreen extends Component<PropsType> {
         }
       }
     }
-    // console.log(datatypes);
 
     return (
       <>
@@ -267,9 +258,7 @@ class DatabaseScreen extends Component<PropsType> {
 
     const tablesWithColumn = struture.tables.reduce((reducer: any[], table) => {
       const foundColumns = table.columns.filter((column) => column.columnName.toUpperCase().search(this.searchText.toUpperCase()) > -1).map((column) => column.columnName);
-      // console.log(foundColumns);
       if (foundColumns.length > 0) {
-        // console.log(foundColumns);
 
         return [...reducer, {
           tableName: table.tableName,
@@ -279,7 +268,6 @@ class DatabaseScreen extends Component<PropsType> {
       }
       return reducer;
     }, []);
-    // console.log(tablesWithColumn.map((table) => `${table.tableName} - ${table.columns.join(', ')}`));
 
     if (tablesWithColumn.length <= 0) {
       return null;
@@ -298,8 +286,6 @@ class DatabaseScreen extends Component<PropsType> {
           <tbody>
             {tablesWithColumn.length > 0
           && tablesWithColumn.map((table) => {
-            // console.log(table);
-
             const res = [
               (
                 <tr key={table.id} className="table-item" onClick={() => this.selectTable(table.table)}>
@@ -345,9 +331,7 @@ class DatabaseScreen extends Component<PropsType> {
       const foundColumns = table.columns
         .filter((column) => column.dataType.toUpperCase().search(this.searchText.toUpperCase()) > -1)
         .map((column) => ({ dataType: column.dataType, columnName: column.columnName }));
-      // console.log(foundColumns);
       if (foundColumns.length > 0) {
-        // console.log(foundColumns);
 
         return [...reducer, {
           tableName: table.tableName,
@@ -376,7 +360,6 @@ class DatabaseScreen extends Component<PropsType> {
           <tbody>
             {tablesWithColumn.length > 0
           && tablesWithColumn.map((table) => {
-            // console.log(table);
 
             const res = [
               (
