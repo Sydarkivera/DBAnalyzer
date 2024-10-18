@@ -2,8 +2,8 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
-import './table.css';
-import ShouldSaveButton from './shouldSaveButton';
+import './Table.css';
+import ShouldSaveButton from './ShouldSaveButton';
 import TableStore from '../store/Table';
 import DatabaseStructureStore from '../store/DatabaseStructure';
 import { ForeignKeyStructure, ForeignKeyColumn, ColumnStructure } from '../database/structures';
