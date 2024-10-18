@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import TableStore from 'src/store/Table';
-import ShouldSaveButton from './shouldSaveButton';
-import './verifyTable.css';
+import ShouldSaveButton from './ShouldSaveButton';
+import './VerifyTable.css';
 
 interface PropType {
   previewTable: Function,
