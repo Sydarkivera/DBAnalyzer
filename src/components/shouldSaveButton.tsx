@@ -11,10 +11,6 @@ interface PropTypes {
 
 @observer
 class ShouldSaveButton extends Component<PropTypes> {
-  // constructor() {
-  //   super();
-  // }
-
   onChange = () => {
     const { onChange, shouldSave } = this.props;
     if (onChange) {
@@ -30,14 +26,11 @@ class ShouldSaveButton extends Component<PropTypes> {
           break;
         default:
       }
-    } else {
-      // console.log('BUtotn changed but missing onChange props');
     }
   };
 
   render() {
     const { shouldSave, style } = this.props;
-    // console.log(this.props.shouldSave);
     switch (shouldSave) {
       case ShouldSave.No:
         return <FaRegCircle style={{ color: 'red', ...style }} onClick={this.onChange} />;

@@ -9,8 +9,6 @@ import DatabaseStructureStore from '../store/DatabaseStructure';
 import { ForeignKeyStructure, ForeignKeyColumn, ColumnStructure } from '../database/structures';
 
 interface PropsType {
-  // table?: Table,
-  // selectedStore?: Selected,
   selectForeignKey?: Function,
   highlightColumns?: ForeignKeyColumn[],
   table?: TableStore,
@@ -21,7 +19,6 @@ interface StateType {
   views: any[]
 }
 
-// @inject("selectedStore")
 @observer
 class TableComponent extends Component<PropsType> {
   @observable data: any[][] = [];
@@ -37,7 +34,6 @@ class TableComponent extends Component<PropsType> {
   @observable displayNullColumns = false;
 
   @observable highlight: ForeignKeyColumn[] = [];
-  // @observable end = 30;
 
   allowData = true;
 
@@ -66,26 +62,8 @@ class TableComponent extends Component<PropsType> {
       return;
     }
     await table.fetchData(this.start, this.start + this.interval); // initial 10
-    // try {
-    //   await this.props.table.loadColumnData();
-    //   this.numberOfRows = this.props.table.rowCount;
 
     const data = [];
-
-    //   if (this.allowData) {
-    //     await mssql.connect(this.props.selectedStore.connection.databaseConfig);
-    //     var request = new mssql.Request();
-    //     const result = await request.query(
-    //       'SELECT * FROM "' +
-    //         this.props.table.tableName +
-    //         '" ORDER BY ' +
-    //         this.props.table.columns[0].columnName +
-    //         " OFFSET " +
-    //         this.start +
-    //         " ROWS FETCH NEXT " +
-    //         this.interval +
-    //         " ROWS ONLY;"
-    //     );
     const { columns } = table;
     const stringTypes = [
       'int',
@@ -118,24 +96,14 @@ class TableComponent extends Component<PropsType> {
 
           tempData.push(d.toDateString());
         } else if (type === 'bit') {
-          // console.log(row[columns[index].columnName]);
 
           if (row[columns[index].columnName].length > 10) {
             tempData.push('binary');
           } else {
             const s = '';
-            // for (const si in row[columns[index].columnName]) {
-            //   console.log(si);
-
-            //   s += row[columns[index].columnName][si];
-            // }
-            // tempData.push(`'${s.toString()}'`);
             tempData.push(row[columns[index].columnName]);
           }
         } else if (type === 'varbinary') {
-          // tempData.push(
-          //   this.stringToBinary(row[structure[index].columnName], false)
-          // );
           tempData.push(row[columns[index].columnName]);
         } else {
           tempData.push(`unknown type: ${type}`);
@@ -143,19 +111,7 @@ class TableComponent extends Component<PropsType> {
       }
       data.push(tempData);
     }
-    //   }
-
-    //   // console.log(data);
     this.data = data;
-    //   if (
-    //     !this.props.selectedStore.connection.databaseStructure.saveDataLoaded
-    //   ) {
-    //     this.props.selectedStore.connection.databaseStructure.fetchAllTables();
-    //   }
-    // } catch (err) {
-    //   console.log(err);
-    // }
-    // await this.findCandidateKeys();
   };
 
   displayNextRows = () => {
@@ -178,7 +134,6 @@ class TableComponent extends Component<PropsType> {
     if (selectForeignKey) {
       selectForeignKey(item);
     } else {
-      // console.log(item.pkTable, item.table);
     }
   }
 
@@ -217,7 +172,6 @@ class TableComponent extends Component<PropsType> {
     return structure.tables.reduce(
       (reducer, t) => {
         const keys = t.foreignKeys.filter((item) => item.pkTable === table.tableName);
-        // console.log(keys);
         if (keys.length > 0) {
           return [
             ...reducer,
@@ -234,7 +188,6 @@ class TableComponent extends Component<PropsType> {
   renderForeignKeysPointingOnThisTable() {
     const linkingTables = this.getKeysPointingOnThisTable();
     if (!linkingTables) return null;
-    // console.log(linkingTables);
 
     return (
       <p>
@@ -252,16 +205,12 @@ class TableComponent extends Component<PropsType> {
         ))}
       </p>
     );
-    // }
-    // return null;
   }
 
   renderFKForColumn(column: ColumnStructure) {
     let fkString = '';
     let fkCount = 0;
     if (column.foreignKeys.length > 0) {
-      // console.log('has foreign keys');
-
       fkCount = 0;
       fkString = 'Foreign Keys:\n';
       for (let i = 0; i < column.foreignKeys.length; i++) {
@@ -306,7 +255,6 @@ class TableComponent extends Component<PropsType> {
       return (<p />);
     }
     const { columns } = table;
-    // console.log(structure);
     if (!columns) {
       return null;
     }
@@ -335,14 +283,11 @@ class TableComponent extends Component<PropsType> {
               {' '}
               {column.dataType}
             </p>
-
-            {/* {fk && fk.length > 1 ? fk : null} */}
           </th>,
         );
       }
     }
 
-    // return null;
     let data: any;
     if (this.data.length > 0) {
       data = [];
@@ -350,11 +295,6 @@ class TableComponent extends Component<PropsType> {
         const rowContent = [];
         for (const i in this.data[index]) {
           const struct = columns[i];
-          // if (!struct) {
-          //   console.log(struct);
-          //   console.log(columns);
-          //   console.log(this.data[index]);
-          // }
 
           if (this.displayNullColumns || !struct.isNull) {
             rowContent.push(
@@ -421,7 +361,6 @@ class TableComponent extends Component<PropsType> {
               checked={this.displayNullColumns}
               onChange={(val) => {
                 this.displayNullColumns = val.target.checked;
-                // console.log(this.displayNullColumns);
               }}
             />
           </p>
@@ -451,7 +390,6 @@ class TableComponent extends Component<PropsType> {
       return null;
     }
     let data = this.renderData();
-    // let data = null;
     if (!data) {
       data = <p>Loading data</p>;
     }
