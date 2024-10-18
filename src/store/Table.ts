@@ -4,7 +4,6 @@ import {
 import { v4 as uuid } from 'uuid';
 import DatabaseManager from '../database';
 import { ForeignKeyStructure, ColumnStructure } from '../database/structures';
-// import DatabaseStructureStore from './DatabaseStructure';
 import ConnectionStore from './Connection';
 import { permutations, removeDoubles, testKeyLikeliness } from '../functions/permutations';
 import { getSQLColumnsFromList } from '../functions/sql';
@@ -61,13 +60,11 @@ export default class TableStore {
     } else {
       // give id
       this.id = uuid();
-      // this.struture = new DatabaseStructureStore(this);
     }
 
     this.saveHandler = reaction(
       () => this.json,
       (json) => {
-        // console.log("updated", json);
         if (this.autoSave) {
           this.saveData();
         }
@@ -77,7 +74,6 @@ export default class TableStore {
 
   loadSavedData(id: string) {
     const data = fileStore.get(`table_${id}`);
-    // console.log(data);
     if (data) {
       this.autoSave = false;
       this.tableName = data.tableName;
@@ -92,14 +88,9 @@ export default class TableStore {
   }
 
   saveData() {
-    // console.log('save', this.json);
-    // fileStore.set("selected", data);
-    // console.log("saveData");
-    // console.log(data, this.id);
     try {
       fileStore.set(`table_${this.id}`, this.json);
     } catch (e) {
-      // console.error(e);
     }
   }
 
@@ -116,18 +107,12 @@ export default class TableStore {
   }
 
   @action async fetchColumns() {
-    // console.log('fetch columns');
-
-    // console.log(this.columns);
-
     if (this.columns.length > 0) {
       return;
     }
 
     const columns = await DatabaseManager
       .fetchColumns(this.connection.connectionData, this.tableName);
-
-    // console.log(this.tableName, columns);
 
     this.primaryKeys = await DatabaseManager
       .fetchPrimaryKeys(this.connection.connectionData, this.tableName);
@@ -138,10 +123,8 @@ export default class TableStore {
     this.foreignKeys = fkeys;
 
     const data = [];
-    // console.log(fkeys);
 
     for (const index in columns) {
-      // console.log(columns[index]);
 
       const columnData: ColumnStructure = {
         columnName: columns[index].COLUMN_NAME,
@@ -166,9 +149,6 @@ export default class TableStore {
       data.push(columnData);
     }
     this.columns = data;
-    // console.log(this.columns);
-
-    // await this.loadNullColumns();
   }
 
   async fetchData(start: number, end: number) {
@@ -183,7 +163,6 @@ export default class TableStore {
     } catch (e) {
       this.errorStore.add(`Error fetching data for table: ${this.tableName}`);
     }
-    // console.log(res);
   }
 
   @action async findNullColumns() {
@@ -198,9 +177,6 @@ export default class TableStore {
         if (r.length <= 0) {
           column.isNull = true;
         }
-        // else if (this.tableName === 'Diarieanteckningar') {
-        //   console.log(r, column);
-        // }
       }
     }
   }
@@ -214,14 +190,9 @@ export default class TableStore {
     this.candidateProgress = 0;
     const { columns } = this;
     let index;
-    // if (!this.candidateKeys) {
     this.candidateKeys = [];
-    // }
     for (index in columns) {
       const column = columns[index];
-      // console.log(this.props.selectedStore.table.tableName);
-      // console.log(column.columnName);
-      // console.log(column.dataType);
       if (
         column.dataType !== 'binary'
         && column.dataType !== 'bit'
@@ -242,14 +213,6 @@ export default class TableStore {
     }
     console.log('maximum possible tests for candidate keys: ', possibilities);
 
-    // let tcRes = await executeSQLQuery(
-    //   "SELECT COUNT(*) as count FROM [" + this.tableName + "]"
-    // );
-    // // console.log(tcRes);
-    // var tableCount = tcRes[0]["count"];
-
-    // console.log(rowCount);
-
     await this.testCombinationsAlternative(possibleColumns, rowCount);
     this.saveData();
   }
@@ -257,10 +220,9 @@ export default class TableStore {
   async testCombinationsAlternative(array: any[], tableCount: number) {
     console.log(this.candidateProgress);
 
-    // console.log(array);
     // start with all, then remove one at a time until it is no longer distinct.
     let res = await this.testIfAnyCombinationIsPossible(array, tableCount);
-    // console.log("res:", res);
+
     if (!res) {
       // there are no unique row in the table. stop searching.
       return;
@@ -268,29 +230,21 @@ export default class TableStore {
     const current = [...array];
     for (let index = 0; index < current.length; index++) {
       const temp = [...current];
-      // latest = current[index];
       temp.splice(index, 1);
       // test again.
       res = await this.testIfAnyCombinationIsPossible(temp, tableCount);
       if (res) {
-        // console.log("still possible");
         // If still possible candidate, remove the item.
         current.splice(index, 1);
         index -= 1;
       }
     }
     if (current.length > 0) {
-      // console.log(current);
       const n = current.map((item) => ({
         columnName: item.columnName,
         dataType: item.dataType,
       }));
-      // console.log(n);
       this.candidateKeys.push(n);
-      // console.log(
-      //   'candidate:',
-      //   current.map((item) => item.columnName),
-      // );
 
       let newArray = [...array];
       for (let i = 0; i < current.length; i++) {
@@ -309,7 +263,6 @@ export default class TableStore {
     this.candidateProgress += 1;
     const uniqueRows = await DatabaseManager
       .countUniqueRows(this.connection, this.tableName, columns);
-    // console.log('test done');
 
     if (uniqueRows === tableCount) {
       return true;
@@ -320,22 +273,14 @@ export default class TableStore {
   // ------------------ (( Finding potential foreign keys )) ------------------------ //
 
   async findForeignKeys(allTables: TableStore[]) {
-    // await mssql.connect(this.store.connection.databaseConfig);s
-
-    // this.foundForeignKeys = [];
     const selectedTable = this;
     // TODO make better solution
     if (this.rowCount < 1) {
       return;
     }
-    // let allTables = this.props.selectedStore.connection.databaseStructure
-    //   .tables;
-    // console.log('starting foreign key search on table: ', this.tableName);
     for (const index in selectedTable.candidateKeys) {
       const key = selectedTable.candidateKeys[index];
-      // for every table check if any set of columns contain this key.
-      // console.log(toJS(this.props.selectedStore.connection.databaseStructure));
-      // console.log(toJS(allTables));
+      // for every table check if any set of columns contain this key
       for (const tableIndex in allTables) {
         const table = allTables[tableIndex];
         if (table.rowCount > 0 && table.tableName !== selectedTable.tableName) {
@@ -346,7 +291,6 @@ export default class TableStore {
             const pos = [];
             for (const columnIndex in table.columns) {
               const column = table.columns[columnIndex];
-              // console.log(column);
               if (column.dataType === keyColumn.dataType && !column.isNull && !keyColumn.isNull) {
                 pos.push({ ...column });
               }
@@ -358,8 +302,6 @@ export default class TableStore {
 
           if (possibleColumns.length === key.length) {
             // test if all valuess of the candidate key exists in the potential column
-            // console.log(possibleColumns);
-            // let tests = 0;
             const t = [];
             for (let i = 0; i < possibleColumns.length; i++) {
               const q = [];
@@ -370,7 +312,6 @@ export default class TableStore {
                       this.tableName, key[i].columnName,
                       table.tableName, possibleColumns[i][j].columnName);
 
-                  // tests += 1;
                   if (exists) {
                     q.push(possibleColumns[i][j]);
                   }
@@ -383,19 +324,11 @@ export default class TableStore {
               }
             }
 
-            // console.log("tested columns: ", tests);
-            // console.log(t);
             if (t.length === key.length) {
               // test the posssible permutations
               let perms = permutations(t);
-              // console.log("have doubles", perms);
               perms = removeDoubles(perms);
-              // console.log("removed doubles", perms);
-              // console.log(perms.length);
               for (let i = 0; i < perms.length; i++) {
-                // if ((i + 1) % 500 === 0) {
-                //   console.log(i);
-                // }
 
                 const exists = await DatabaseManager
                   .testIfForeignKey(this.connection, this.tableName,
@@ -403,20 +336,7 @@ export default class TableStore {
 
                 // test if all rows in the foreign key columns exists in the candidatekey
                 // columns. If they exists, then a possible key is found.
-                // let r = await executeSQLQuery(
-                // "IF NOT EXISTS \n( SELECT\n " +
-                //   getSQLColumnsFromList(perms[i]) +
-                //   " FROM [" +
-                //   table.tableName +
-                //   "] WHERE\n " +
-                //   getSQLNotNULLFromList(perms[i]) +
-                //   " \nEXCEPT SELECT " +
-                //   getSQLColumnsFromList(key) +
-                //   " FROM [" +
-                //   selectedTable.tableName +
-                //   "] ) \nSELECT 'exists' as res ELSE SELECT 'not' as res"
-                // );
-                // console.log(r);
+
                 if (exists) {
                   table.foundForeignKeys = [...table.foundForeignKeys, {
                     fkTable: table.tableName,
@@ -443,9 +363,6 @@ export default class TableStore {
         }
       }
     }
-    // console.log(JSON.stringify(this.foundForeignKeys));
-    // this.saveData(this.asJson);
-    // console.log("foreign done");
     this.saveData();
   }
 
@@ -467,8 +384,6 @@ export default class TableStore {
             ),
           ];
         }
-
-        // console.log(keys);
         if (keys.length > 0) {
           return [
             ...reducer,

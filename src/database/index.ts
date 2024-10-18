@@ -2,17 +2,9 @@ import MSSQL from './mssql';
 import MYSQL from './mysql';
 import { ConnectionData, ForeignKeyStructure, ColumnStructure } from './structures';
 
-// import stores from '../store';
-
-// const { errorStore } = stores;
-
-// console.log(errorStore);
-
 export default {
 
   async connect(connectionData: ConnectionData) {
-    // console.log(`testing ${connectionData.dbms} connection`);
-
     if (connectionData.dbms === 'mssql') {
       return MSSQL.connect(connectionData);
     } if (connectionData.dbms === 'mysql') {
@@ -114,7 +106,6 @@ export default {
     }
     throw new Error(`Unknown DBMS: ${connectionData.dbms} in testIfValuesInColumnExistInOtherTable`);
   },
-  // testIfForeignKey(this.connection, this.tableName, key, table.tableName, perms[i]);
   async testIfForeignKey(
     connectionData: ConnectionData,
     candidateTable: string,
@@ -129,7 +120,6 @@ export default {
         connectionData, candidateTable, candidateColumns, foreignTable, foreignColumns,
       );
     }
-    // errorStore.add(`Unknown DBMS: ${connectionData.dbms} in testIfForeignKey`);
     throw new Error(`Unknown DBMS: ${connectionData.dbms} in testIfForeignKey`);
   },
 

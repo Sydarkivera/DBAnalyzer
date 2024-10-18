@@ -25,8 +25,6 @@ class DBSelectScreen extends Component<PropsType> {
 
   constructor(props: PropsType) {
     super(props);
-    // console.log(props.errorStore);
-
     this.demoConnection = new ConnectionStore(props.errorStore);
   }
 
@@ -53,8 +51,7 @@ class DBSelectScreen extends Component<PropsType> {
   selectConnection(connection: ConnectionStore) {
     const { selected, history } = this.props;
     selected.connection = connection;
-    // this.props.selectedStore.connection = connection;
-    // //navigate to selected database
+    // navigate to selected database
     history.push('/database/');
   }
 
@@ -125,16 +122,6 @@ class DBSelectScreen extends Component<PropsType> {
           </div>
         </nav>
         <section className="section">
-          {/* <Navbar></Navbar> */}
-          {/* <header className="App-header"> */}
-          {/* <div className="TopMenu">
-            <p className="center-flex">Db select</p>
-            <p onClick={() => (this.showAddForm = !this.showAddForm)}>
-              New connection
-            </p>
-          </div> */}
-
-          {/* {this.renderNewConnectionForm()} */}
           <ConnectionModal
             show={this.showAddForm}
             onClose={() => { this.showAddForm = false; }}
@@ -142,15 +129,6 @@ class DBSelectScreen extends Component<PropsType> {
             onSave={this.createFormConnection}
           />
           {this.renderConnections()}
-          {/* </header> */}
-          {/* <p
-            onClick={() => {
-              console.log(this.props.connectionStore);
-              this.props.connectionStore.clearAllData();
-            }}
-          >
-            Delete all data
-          </p> */}
         </section>
       </>
     );
