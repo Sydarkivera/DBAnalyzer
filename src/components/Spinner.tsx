@@ -1,7 +1,7 @@
 import React from 'react';
 import { FiLoader } from 'react-icons/fi';
 
-import './spinner.css';
+import './Spinner.css';
 
 function Spinner() {
   return (

@@ -4,7 +4,7 @@ import { observer, inject } from 'mobx-react';
 import { observable } from 'mobx';
 import '../App.css';
 import SelectedStore from '../store/Selected';
-import TableComponent from '../components/table';
+import TableComponent from '../components/Table';
 
 interface PropsType {
   selected: SelectedStore,
