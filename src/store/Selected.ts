@@ -2,8 +2,6 @@ import {
   observable, reaction, computed, IReactionDisposer, action,
 } from 'mobx';
 
-// import { Connection, ConnectionList } from "./connections";
-// import { Table } from "./table";
 import ConnectionStore from './Connection';
 import ConnectionsStore from './Connections';
 import TableStore from './Table';
@@ -52,20 +50,9 @@ export default class SelectedStore {
 
   @action loadSaveData() {
     const data = fileStore.get('selected');
-    // console.log(data);
     if (data) {
       this.autoSave = false;
       if (data.conId) {
-        // console.log(data.conId);
-
-        // console.log(data.conId);
-        // this.connection = connectionStore.connections.find(item => {
-        //   if (item.id === data.conId) {
-        //     return true;
-        //   }
-        //   return false;
-        // });
-        // this.connection.fetchDatabaseStrucutre();
         const foundConnection = this.connectionList.connections.find((item) => {
           if (item.id === data.conId) {
             return true;
@@ -77,22 +64,9 @@ export default class SelectedStore {
         }
       }
       if (data.tableId) {
-        // console.log(data.tableId);
-        // console.log(this.connection.databaseStructure);
-
-        // console.log(data.tableId);
         if (this.connection && this.connection.struture) {
           this.table = this.connection.struture.getTable(data.tableId);
         }
-        // console.log(this.table);
-
-        // console.log(this.table);
-        // this.table = this.connection.databaseStructure.tables.find(item => {
-        //   if (item.id === data.tableId) {
-        //     return true;
-        //   }
-        //   return false;
-        // });
       }
       this.autoSave = true;
     }

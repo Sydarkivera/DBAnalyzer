@@ -19,7 +19,6 @@ export default class ConnectionsStore {
   }
 
   saveData = async (connections: string[]) => {
-    // console.log(connections);
     try {
       await fileStore.set('ConnectionStore', connections);
     } catch (e) {
@@ -27,24 +26,14 @@ export default class ConnectionsStore {
     }
   };
 
-  // clearAllData() {
-  //   fileStore.clear();
-  // }
-
   loadSavedData = async () => {
     try {
       const data = fileStore.get('ConnectionStore');
-      // console.log(data);
-      // const connections = JSON.parse(data);
       if (data) {
-        // this.autoSave = false;
         for (const index in data) {
-          // console.log(data[index]);
 
           this.connections.push(new ConnectionStore(this.errorStore, data[index]));
-          // console.log(this.connections);
         }
-        // this.autoSave = true;
       } else {
         // create default data
       }

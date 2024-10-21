@@ -12,17 +12,6 @@ interface ErrorStruct {
 export default class ErrorStore {
   @observable errors: ErrorStruct[] = [];
 
-  // constructor() {
-  // this.errors.push({
-  //   title: 'default test error',
-  //   id: 'default',
-  // });
-  // this.errors.push({
-  //   title: 'default test error',
-  //   id: 'defaults',
-  // });
-  // }
-
   @action add(title: string, body?: string) {
     this.errors.push({ title, id: uuid(), body });
   }

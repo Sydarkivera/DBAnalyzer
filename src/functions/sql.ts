@@ -22,11 +22,9 @@ export function getSQLNotNULLFromList(array: ColumnStructure[], divider = '"') {
 
 export async function executeSQLQuery(query: string, depth: number = 0): Promise<any> {
   try {
-    // await mssql.connect(this.store.connection.databaseConfig);
     // create Request object
     const request = new mssql.Request();
     const result = await request.query(query);
-    // console.log(result, query);
     return result;
   } catch (e) {
     console.log(query);

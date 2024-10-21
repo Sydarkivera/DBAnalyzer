@@ -61,39 +61,4 @@ const ExpandableListItem = ({
   );
 };
 
-// function ExpandableListItem(props: Props): React.ReactElement {
-//   const { title, children } = props;
-//   console.log('world');
-
-//   return (
-// <div className="list-item">
-//   <div style={{ flexDirection: 'row', display: 'flex', justifyContent: 'space-between' }}>
-//     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-//       <p style={{ fontWeight: 'bold' }}>{title}</p>
-//       <button
-//         style={{ marginLeft: 20 }}
-//         className="button is-primary"
-//         type="button"
-//       >
-//         <strong>Start</strong>
-//       </button>
-//     </div>
-//     <FaChevronDown style={{ alignSelf: 'center' }} />
-//   </div>
-//   {children}
-//   {/* <p>
-//             The database has
-//             {' '}
-//             {struture.numExistingForeignKeys}
-//             {' '}
-//             Foreign keys and DBAnalyzer found
-//             {' '}
-//             {struture.numFoundForeignKeys}
-//             {' '}
-//             Potential Foreign Keys
-//           </p> */}
-// </div>
-//   );
-// }
-
 export default ExpandableListItem;

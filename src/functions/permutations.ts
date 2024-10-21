@@ -14,43 +14,24 @@ export function selectN(n: number, array: any[]) {
   // return array;
   let res = [];
   res = doLoop(array, 0, n);
-  // for (var i = 0; i < array.length; i++) {
-  //   for (var j = i + 1; j < array.length; j++) {
-  //     res.push([array[i], array[j]]);
-  //   }
-  // }
+
   return res;
 }
 
 function doLoop(array: any[], start: number, n: number, level: number = 1): any {
-  // console.log(n, level);
-  // if (level > n) {
-  //   return [];
-  // }
   const res = [];
   for (let i = start; i < array.length; i++) {
     if (level === n) {
       res.push([array[i]]);
     } else {
       const r = doLoop(array, i + 1, n, level + 1);
-      // console.log("r:", r);
       for (const item of r) {
         res.push([array[i], ...item]);
       }
     }
   }
-  // console.log(res);
   return res;
 }
-
-// console.log(select(4, array));
-// console.log(select2(array));
-//
-// if (select2(array).length === select(2, array).length) {
-//   console.log("equal");
-// } else {
-//   console.log("not equal");
-// }
 
 export function permutations(array: any[], level: number = 0): any {
   if (level === array.length - 1) {
@@ -71,10 +52,7 @@ export function removeDoubles(array: any[]) {
   return array.filter((a) => new Set(a.map((item: any) => item.columnName)).size === a.length);
 }
 
-// console.log(permutations([[1, 2, 3], [4, 5, 6], [7, 8, 9]]));
-
 export function testLikness(one: any, two: any) {
-  // console.log(one, two);
   if (one.length !== two.length) {
     return 0;
   }
@@ -142,7 +120,6 @@ function distance(a: string, b: string) {
   const b_flag = [];
   const search_range = Math.floor(Math.max(a_len, b_len) / 2) - 1;
   const minv = Math.min(a_len, b_len);
-  // console.log(minv);
 
   // Looking only within the search range, count and flag the matched pairs.
   let Num_com = 0;
@@ -231,23 +208,6 @@ function distance(a: string, b: string) {
 
   return weight;
 }
-// console.log(testLikness(["hello"], ["word"]));
-
-// console.log(
-//   testLikness(
-//     ["DOKUMENT_FK_ID", "INITARENDE_JN", "HISTORIK_JN"],
-//     ["DOKUMENTDOC_FK_ID", "INTERNET_JN", "INTRANET_JN"]
-//   )
-// );
-// console.log(
-//   testLikness(
-//     ["DOKUMENTDOC_FK_ID", "INTERNET_JN", "INTRANET_JN"],
-//     ["DOKUMENT_FK_ID", "INITARENDE_JN", "HISTORIK_JN"]
-//   )
-// );
-
-// console.log(testLikness(["HISTORIK_JN"], ["INTRANET_JN"]));
-// console.log(testLikness(["INTRANET_JN"], ["HISTORIK_JN"]));
 
 export function testKeyLikeliness(key: ForeignKeyStructure, likelinessThreshold: number) {
   if (likelinessThreshold === 0) {
