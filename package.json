@@ -77,10 +77,6 @@
     "directories": {
       "output": "./build_os"
     },
-    "mac": {
-      "category": "your.app.category.type",
-      "target": "dmg"
-    },
     "win": {
       "target": "portable"
     },
