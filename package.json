@@ -70,16 +70,12 @@
     "uuid": "^8.1.0"
   },
   "build": {
-    "appId": "your.id",
+    "appId": "com.electron.dbanalyzer",
     "files": [
       "./dist/**/*"
     ],
     "directories": {
       "output": "./build_os"
-    },
-    "mac": {
-      "category": "your.app.category.type",
-      "target": "dmg"
     },
     "win": {
       "target": "portable"
