@@ -13,11 +13,8 @@ interface Props {
   errorStore: ErrorStore
 }
 
-@observer
-class Root extends Component<Props> {
-  render() {
-    const { errorStore } = this.props;
-    return (
+function Root() {
+  return (
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
@@ -30,7 +27,6 @@ class Root extends Component<Props> {
       </BrowserRouter >
     );
   };
-}
 
 function Layout() {
   return (
