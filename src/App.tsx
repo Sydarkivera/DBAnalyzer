@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { BrowserRouter, createBrowserRouter, Outlet, Route, RouterProvider, Routes } from 'react-router-dom';
 import './App.css';
 
@@ -13,8 +13,10 @@ interface Props {
   errorStore: ErrorStore
 }
 
-const Root = observer(
-  () => {
+@observer
+class Root extends Component<Props> {
+  render() {
+    const { errorStore } = this.props;
     return (
       <BrowserRouter>
         <Routes>
@@ -27,8 +29,8 @@ const Root = observer(
         </Routes>
       </BrowserRouter >
     );
-  }
-);
+  };
+}
 
 function Layout() {
   return (
