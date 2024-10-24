@@ -1,22 +1,14 @@
 const electron = require('electron');
 const isDev = require('electron-is-dev');
+const log = require('electron-log');
 const fs = require('fs');
 
-const log = require('electron-log');
-
-log.info('Hello, log');
-log.warn('Some problem appears');
-
-// require("electron-reload")(__dirname);
 // Module to control application life.
 const { app } = electron;
 // Module to create native browser window.
 const { BrowserWindow } = electron;
 
 const path = require('path');
-// const url = require("url");
-
-// const mssql = require("mssql");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -34,7 +26,7 @@ function createWindow() {
     },
   });
 
-  log.info('crating window');
+  log.info('creating window');
 
   // and load the index.html of the app.
   if (isDev) {

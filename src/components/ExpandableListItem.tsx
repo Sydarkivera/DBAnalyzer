@@ -1,6 +1,6 @@
 import React, { useState, MouseEvent } from 'react';
 import { FaChevronDown, FaCheck } from 'react-icons/fa';
-import Spinner from './spinner';
+import Spinner from './Spinner';
 
 interface Props {
   title?: string,
