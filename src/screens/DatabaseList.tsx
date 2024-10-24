@@ -1,7 +1,7 @@
 import React, { Component, MouseEvent } from 'react';
 import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
-import ErrorStore from 'src/store/ErrorStore';
+import ErrorStore from '../store/ErrorStore';
 import ConnectionStore from '../store/Connection';
 import ConnectionsStore from '../store/Connections';
 import SelectedStore from '../store/Selected';
