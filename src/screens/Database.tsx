@@ -7,7 +7,7 @@ import '../App.css';
 import { FaSearch } from 'react-icons/fa';
 import ErrorStore from 'src/store/ErrorStore';
 import ConnectionModal from '../components/ConnectionModal';
-import ProgressBar, { VisualPart } from '../components/progressBar';
+import ProgressBar, { VisualPart } from '../components/ProgressBar';
 import SelectedStore from '../store/Selected';
 import ShouldSaveButton from '../components/ShouldSaveButton';
 import TableStore, { ShouldSave } from '../store/Table';

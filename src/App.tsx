@@ -3,10 +3,10 @@ import { Switch, Route } from 'react-router-dom';
 import './App.css';
 
 import { observer } from 'mobx-react';
-import DBSelectScreen from './screens/databaseList';
-import Database from './screens/database';
-import TablePreviewScreen from './screens/tablePreview';
-import VerificationScreen from './screens/verification';
+import DBSelectScreen from './screens/DatabaseList';
+import Database from './screens/Database';
+import TablePreviewScreen from './screens/TablePreview';
+import VerificationScreen from './screens/Verification';
 import ErrorStore from './store/ErrorStore';
 
 interface Props {
