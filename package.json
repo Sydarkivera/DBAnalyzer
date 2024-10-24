@@ -46,8 +46,8 @@
   },
   "main": "./dist/main.js",
   "scripts": {
-    "dev:electron": "NODE_ENV=development webpack --config webpack.electron.config.js --mode development && electron .",
-    "dev:react": "NODE_ENV=development webpack-dev-server --config webpack.react.config.js --mode development",
+    "dev:electron": "webpack --config webpack.electron.config.js --mode development && electron .",
+    "dev:react": "webpack-dev-server --config webpack.react.config.js --mode development",
     "build:electron": "webpack --config webpack.electron.config.js --mode production",
     "build:react": "webpack --config webpack.react.config.js --mode production",
     "pack": "electron-builder --dir",
