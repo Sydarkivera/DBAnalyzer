@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Switch, Route } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import './App.css';
 
 import { observer } from 'mobx-react';
@@ -19,33 +19,27 @@ class App extends Component<Props> {
     const { errorStore } = this.props;
     return (
       <div style={{ backgroundColor: '#f7f7f7', minHeight: '100vh' }}>
-        <Switch>
-          <Route exact path="/" component={DBSelectScreen} />
-          <Route exact path="/database/" component={Database} />
-          <Route path="/database/table/" component={TablePreviewScreen} />
-          <Route
-            path="/database/verification/"
-            component={VerificationScreen}
-          />
-          <Route path="/" component={DBSelectScreen} />
-        </Switch>
-        <div style={{
-          position: 'fixed', bottom: 0, right: '10%', left: '10%',
-        }}
-        >
+        <Routes>
+          <Route path="/" element={<DBSelectScreen/>} />
+          <Route path="/database/" element={<Database/>} />
+          <Route path="/database/table/" element={<TablePreviewScreen/>} />
+          <Route path="/database/verification/" element={<VerificationScreen/>} />
+          <Route path="/" element={<DBSelectScreen/>} />
+        </Routes>
+        <div style={{position: 'fixed', bottom: 0, right: '10%', left: '10%'}}>
           {
-        errorStore.errors.map((error) => (
-          <article className="message is-danger" key={error.id}>
-            <div className="message-header">
+            errorStore.errors.map((error) => (
+              <article className="message is-danger" key={error.id}>
+              <div className="message-header">
               <p>{error.title}</p>
               <button className="delete" aria-label="delete" type="button" onClick={() => { errorStore.remove(error.id); }} />
-            </div>
-            <div className="message-body">
+              </div>
+              <div className="message-body">
               {error.body}
-            </div>
-          </article>
-        ))
-      }
+              </div>
+              </article>
+            ))
+          }
         </div>
       </div>
     );

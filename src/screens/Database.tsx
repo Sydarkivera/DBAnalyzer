@@ -41,7 +41,7 @@ class DatabaseScreen extends Component<PropsType> {
   }
 
   async loadInitialData() {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const { selected } = this.props;
       if (!selected.connection.struture) {
         selected.connection.loadDatabaseStructure();
