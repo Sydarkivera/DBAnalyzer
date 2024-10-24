@@ -1,8 +1,7 @@
 const electron = require('electron');
 const isDev = require('electron-is-dev');
-const fs = require('fs');
-
 const log = require('electron-log');
+const fs = require('fs');
 
 log.info('Hello, log');
 log.warn('Some problem appears');
