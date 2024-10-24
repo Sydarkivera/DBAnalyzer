@@ -33,7 +33,7 @@ function createWindow() {
     },
   });
 
-  log.info('crating window');
+  log.info('creating window');
 
   // and load the index.html of the app.
   if (isDev) {
