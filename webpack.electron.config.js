@@ -24,6 +24,10 @@ module.exports = {
               '@babel/preset-env',
               '@babel/preset-react',
               '@babel/preset-typescript'
+            ],
+            plugins: [
+              ['@babel/plugin-proposal-decorators', { 'version': '2023-11' }],
+              '@babel/plugin-proposal-class-properties'
             ]
           }
         },

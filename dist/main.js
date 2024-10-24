@@ -1,25 +1,158 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "./electron/main.js":
-/*!**************************!*\
-  !*** ./electron/main.js ***!
-  \**************************/
-/***/ (() => {
+/***/ "electron":
+/*!***************************!*\
+  !*** external "electron" ***!
+  \***************************/
+/***/ ((module) => {
 
-throw new Error("Module build failed (from ./node_modules/babel-loader/lib/index.js):\nError: Cannot find package '@babel/preset-typescript' imported from /home/lexx/Dev/DBAnalyzer/babel-virtual-resolve-base.js\n    at __node_internal_ (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/vendor/import-meta-resolve.js:225:9)\n    at new NodeError (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/vendor/import-meta-resolve.js:195:5)\n    at packageResolve (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/vendor/import-meta-resolve.js:899:9)\n    at moduleResolve (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/vendor/import-meta-resolve.js:939:18)\n    at defaultResolve (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/vendor/import-meta-resolve.js:1017:15)\n    at resolve (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/vendor/import-meta-resolve.js:1030:12)\n    at tryImportMetaResolve (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/files/plugins.js:148:45)\n    at resolveStandardizedNameForImport (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/files/plugins.js:173:19)\n    at resolveStandardizedName (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/files/plugins.js:185:22)\n    at loadPreset (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/files/plugins.js:67:7)\n    at loadPreset.next (<anonymous>)\n    at createDescriptor (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/config-descriptors.js:140:16)\n    at createDescriptor.next (<anonymous>)\n    at step (/home/lexx/Dev/DBAnalyzer/node_modules/gensync/index.js:261:32)\n    at evaluateAsync (/home/lexx/Dev/DBAnalyzer/node_modules/gensync/index.js:291:5)\n    at /home/lexx/Dev/DBAnalyzer/node_modules/gensync/index.js:44:11\n    at Array.forEach (<anonymous>)\n    at Function.async (/home/lexx/Dev/DBAnalyzer/node_modules/gensync/index.js:43:15)\n    at Function.all (/home/lexx/Dev/DBAnalyzer/node_modules/gensync/index.js:216:13)\n    at Generator.next (<anonymous>)\n    at createDescriptors (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/config-descriptors.js:102:41)\n    at createDescriptors.next (<anonymous>)\n    at createPresetDescriptors (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/config-descriptors.js:96:17)\n    at createPresetDescriptors.next (<anonymous>)\n    at /home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/gensync-utils/functional.js:39:27\n    at Generator.next (<anonymous>)\n    at mergeChainOpts (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/config-chain.js:350:34)\n    at mergeChainOpts.next (<anonymous>)\n    at chainWalker (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/config-chain.js:316:14)\n    at chainWalker.next (<anonymous>)\n    at loadFileChain (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/config-chain.js:191:24)\n    at loadFileChain.next (<anonymous>)\n    at buildRootChain (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/config-chain.js:77:27)\n    at buildRootChain.next (<anonymous>)\n    at loadPrivatePartialConfig (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/partial.js:72:62)\n    at loadPrivatePartialConfig.next (<anonymous>)\n    at loadPartialConfig (/home/lexx/Dev/DBAnalyzer/node_modules/@babel/core/lib/config/partial.js:115:25)\n    at loadPartialConfig.next (<anonymous>)\n    at step (/home/lexx/Dev/DBAnalyzer/node_modules/gensync/index.js:269:25)\n    at /home/lexx/Dev/DBAnalyzer/node_modules/gensync/index.js:273:13\n    at async.call.result.err.err (/home/lexx/Dev/DBAnalyzer/node_modules/gensync/index.js:223:11)\n    at /home/lexx/Dev/DBAnalyzer/node_modules/gensync/index.js:37:40");
+"use strict";
+module.exports = require("electron");
+
+/***/ }),
+
+/***/ "fs":
+/*!*********************!*\
+  !*** external "fs" ***!
+  \*********************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs");
+
+/***/ }),
+
+/***/ "path":
+/*!***********************!*\
+  !*** external "path" ***!
+  \***********************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("path");
 
 /***/ })
 
 /******/ 	});
 /************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
 /******/ 	
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	// This entry module doesn't tell about it's top-level declarations so it can't be inlined
-/******/ 	var __webpack_exports__ = {};
-/******/ 	__webpack_modules__["./electron/main.js"]();
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
 /******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+(() => {
+/*!**************************!*\
+  !*** ./electron/main.js ***!
+  \**************************/
+var __dirname = "electron";
+var electron = __webpack_require__(/*! electron */ "electron");
+var isDev = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'electron-is-dev'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+var fs = __webpack_require__(/*! fs */ "fs");
+var log = __webpack_require__(Object(function webpackMissingModule() { var e = new Error("Cannot find module 'electron-log'"); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+log.info('Hello, log');
+log.warn('Some problem appears');
+
+// require("electron-reload")(__dirname);
+// Module to control application life.
+var app = electron.app;
+// Module to create native browser window.
+var BrowserWindow = electron.BrowserWindow;
+var path = __webpack_require__(/*! path */ "path");
+// const url = require("url");
+
+// const mssql = require("mssql");
+
+// Keep a global reference of the window object, if you don't, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+var mainWindow;
+function createWindow() {
+  process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
+
+  // Create the browser window.
+  mainWindow = new BrowserWindow({
+    width: 1300,
+    height: 900,
+    webPreferences: {
+      nodeIntegration: true
+    }
+  });
+  log.info('crating window');
+
+  // and load the index.html of the app.
+  if (isDev) {
+    mainWindow.loadURL('http://localhost:4000');
+
+    // Open the DevTools.
+    mainWindow.webContents.openDevTools();
+  } else {
+    log.info(__dirname, path.join(app.getAppPath(), 'dist/index.html'), app.getAppPath());
+    fs.readdir(app.getAppPath(), function (err, files) {
+      if (err) {
+        return;
+      }
+      files.forEach(function (file) {
+        log.info(file);
+      });
+    });
+    mainWindow.loadURL("file://".concat(path.join(app.getAppPath(), 'dist/index.html')));
+  }
+
+  // Emitted when the window is closed.
+  mainWindow.on('closed', function () {
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    mainWindow = null;
+  });
+}
+
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app.on('ready', createWindow);
+
+// Quit when all windows are closed.
+app.on('window-all-closed', function () {
+  // On OS X it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+app.on('activate', function () {
+  // On OS X it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  if (mainWindow === null) {
+    createWindow();
+  }
+});
+
+// In this file you can include the rest of your app's specific main process
+// code. You can also put them in separate files and require them here.
+})();
+
 /******/ })()
 ;
 //# sourceMappingURL=main.js.map
