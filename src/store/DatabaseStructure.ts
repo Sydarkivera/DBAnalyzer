@@ -279,8 +279,8 @@ export default class DatabaseStructureStore {
       if (table.rowCount > 0) {
         try {
           await table.fetchColumns();
-        } catch (e) {
-          this.errorStore.add(`Error loading column data for table: "${table.tableName}"`, e.message);
+        } catch (error: any) {
+          this.errorStore.add(`Error loading column data for table: "${table.tableName}"`, error.message);
           return false;
         }
       }
@@ -298,8 +298,8 @@ export default class DatabaseStructureStore {
       if (table.rowCount > 0) {
         try {
           await table.findNullColumns();
-        } catch (e) {
-          this.errorStore.add(`Error finding column with no data in table: "${table.tableName}"`, e.message);
+        } catch (error: any) {
+          this.errorStore.add(`Error finding column with no data in table: "${table.tableName}"`, error.message);
           return false;
         }
       }
@@ -334,8 +334,8 @@ export default class DatabaseStructureStore {
       if (!this.candidateKeyProgress.includes(key) && table.rowCount > 0) {
         try {
           await table.findCandidateKeys();
-        } catch (e) {
-          this.errorStore.add(`Error finding candidate keys in table: "${table.tableName}"`, e.message);
+        } catch (error: any) {
+          this.errorStore.add(`Error finding candidate keys in table: "${table.tableName}"`, error.message);
           return false;
         }
       }
@@ -356,7 +356,7 @@ export default class DatabaseStructureStore {
         try {
           await table.findForeignKeys(this.tables);
         } catch (error: any) {
-          this.errorStore.add(`Error finding foreign keys in table: "${table.tableName}"`, e.message);
+          this.errorStore.add(`Error finding foreign keys in table: "${table.tableName}"`, error.message);
           return false;
         }
       }
