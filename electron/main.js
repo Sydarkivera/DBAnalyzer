@@ -25,6 +25,11 @@ function createWindow() {
       nodeIntegration: true,
     },
   });
+  registerRoute({
+    id: 'main',
+    browserWindow: window,
+    htmlFile: path.join(__dirname, '../renderer/index.html'),
+  })
 
   log.info('creating window');
 
