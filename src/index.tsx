@@ -6,8 +6,6 @@ import { Provider } from 'mobx-react';
 import stores from './store';
 
 import * as serviceWorker from './serviceWorker';
-import 'react-bulma-components/dist/react-bulma-components.min.css';
-import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
 
 import './index.css';
 import App from './App';
