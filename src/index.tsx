@@ -7,8 +7,8 @@ import stores from './store';
 
 import * as serviceWorker from './serviceWorker';
 
-import './index.css';
 import App from './App';
+import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

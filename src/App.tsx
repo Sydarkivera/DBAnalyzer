@@ -22,7 +22,11 @@ class App extends Component<Props> {
     return (
       <Routes>
         <Route path="/" element={<Layout />}>
-        
+          <Route index element={<DatabaseSelectScreen history={undefined} connections={undefined} selected={undefined} errorStore={new default} />} />
+          <Route path="database" element={<DatabaseScreen history={undefined} selected={undefined} errorStore={new default} />}>
+            <Route path="table" element={<TablePreviewScreen selected={undefined} history={undefined} />} />
+            <Route path="verification" element={<TableVerificationScreen selected={undefined} />} />
+          </Route>
         </Route>
       </Routes>
     );
