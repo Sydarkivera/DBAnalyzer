@@ -2729,6 +2729,7 @@ __metadata:
     electron: "npm:^33.0.2"
     electron-is-dev: "npm:^3.0.1"
     electron-log: "npm:^5.2.0"
+    electron-router-dom: "npm:^2.0.0"
     html-webpack-plugin: "npm:^5.6.3"
     mobx: "npm:^6.13.5"
     mobx-react: "npm:^9.1.1"
@@ -2948,6 +2949,17 @@ __metadata:
   version: 5.2.0
   resolution: "electron-log@npm:5.2.0"
   checksum: 10c0/a3925dfe11aabc354ffcd5f47875e0a6c9698e61f5231e4df2ca5afb6e5fa905bba41880a16806adb7c95f441fc1e78f7507331feab0a9dfac0c542c62f2df7e
+  languageName: node
+  linkType: hard
+
+"electron-router-dom@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "electron-router-dom@npm:2.0.0"
+  peerDependencies:
+    electron: ">=17.0"
+    react: ">=18.0"
+    react-router-dom: ">=6.22.3"
+  checksum: 10c0/aadfd0599e6ccc6d340506110a6ae2610bdc4dca17f39bb1be7c4887678cb973e8b2e94e876e056ae3ef32a04c30fb262c22d1e177a7c2aa42bcb487becc8765
   languageName: node
   linkType: hard
 

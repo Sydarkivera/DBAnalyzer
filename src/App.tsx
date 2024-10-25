@@ -16,12 +16,15 @@ interface Props {
 class App {
   render() {
     return (
-      <>
-        <header></header>
-        <body>
-        </body>
-        <footer></footer>
-      </>
+      <Routes>
+        <Route path="/" element={<App />}>
+          <Route index element={<DBSelectScreen />} />
+          <Route path="database" element={<Database />}>
+            <Route path="table" element={<TablePreviewScreen />} />
+            <Route path="verification" element={<TableVerificationScreen />} />
+          </Route>
+        </Route>
+      </Routes>
     );
   }
 };
