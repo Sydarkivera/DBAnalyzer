@@ -1,12 +1,24 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import ReactDOM from 'react-dom/client';
 import React from 'react';
+
+import { Provider } from 'mobx-react';
+import stores from './store';
+
 import * as serviceWorker from './serviceWorker';
 import 'react-bulma-components/dist/react-bulma-components.min.css';
 import '@creativebulma/bulma-tooltip/dist/bulma-tooltip.min.css';
 
-import { registerRoute } from './lib/electron-router-dom'
+import './index.css';
+import App from './App';
 
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+  <React.StrictMode>
+    <Provider {...stores}>
+      <App errorStore={stores.errorStore} />
+    </Provider>
+  </React.StrictMode>
+)
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
