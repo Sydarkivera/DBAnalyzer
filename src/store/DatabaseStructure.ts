@@ -355,7 +355,7 @@ export default class DatabaseStructureStore {
       if (!this.foreignKeyProgress.includes(key) && table.rowCount > 0) {
         try {
           await table.findForeignKeys(this.tables);
-        } catch (e) {
+        } catch (error: any) {
           this.errorStore.add(`Error finding foreign keys in table: "${table.tableName}"`, e.message);
           return false;
         }
