@@ -9,6 +9,7 @@ import DatabaseSelectScreen from './screens/DatabaseSelect.screen';
 import DatabaseScreen from './screens/Database.screen';
 import TablePreviewScreen from './screens/TablePreview.screen';
 import TableVerificationScreen from './screens/TableVerification.screen';
+import store from './store';
 
 interface Props {
   errorStore: ErrorStore
@@ -21,10 +22,10 @@ class App extends Component<Props> {
     return (
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<DatabaseSelectScreen />} />
-          <Route path="database" element={<DatabaseScreen />}>
-            <Route path="table" element={<TablePreviewScreen />} />
-            <Route path="verification" element={<TableVerificationScreen />} />
+          <Route index element={<DatabaseSelectScreen history={history} connections={store.connections} selected={store.selected} errorStore={store.errorStore}/>} />
+          <Route path="database" element={<DatabaseScreen history={history} selected={store.selected} errorStore={store.errorStore}/>}>
+            <Route path="table" element={<TablePreviewScreen history={history} selected={store.selected} />} />
+            <Route path="verification" element={<TableVerificationScreen selected={store.selected}/>} />
           </Route>
         </Route>
       </Routes>
