@@ -20,7 +20,7 @@ export default class ConnectionStore {
   @observable accessor loading = false;
   @observable accessor status = '';
   @observable accessor id: string = '';
-  @observable accessor struture?: DatabaseStructureStore ;
+  @observable accessor structure: DatabaseStructureStore | undefined;
   @observable accessor label = '';
 
   errorStore: ErrorStore
@@ -64,8 +64,8 @@ export default class ConnectionStore {
   };
 
   @action loadDatabaseStructure() {
-    if (!this.struture) {
-      this.struture = new DatabaseStructureStore(this, this.errorStore, this.id);
+    if (!this.structure) {
+      this.structure = new DatabaseStructureStore(this, this.errorStore, this.id);
     }
   }
 

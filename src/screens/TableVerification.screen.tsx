@@ -33,11 +33,11 @@ class TableVerificationScreen extends Component<PropType> {
   constructor(props: PropType) {
     super(props);
 
-    if (!props.selected.connection.struture) {
+    if (!props.selected.connection.structure) {
       props.selected.connection.loadDatabaseStructure();
     }
-    if (props.selected.connection.struture) {
-      props.selected.connection.struture.fetchAllTables();
+    if (props.selected.connection.structure) {
+      props.selected.connection.structure.fetchAllTables();
     }
   }
 
@@ -60,7 +60,7 @@ class TableVerificationScreen extends Component<PropType> {
     const { selected } = this.props;
     if (
       !this.popupTable
-    || !selected.connection.struture
+    || !selected.connection.structure
     ) {
       return null;
     }
@@ -70,10 +70,10 @@ class TableVerificationScreen extends Component<PropType> {
         <div className="modal-background" onClick={() => { this.popupTable = ''; }} />
         <div className="modal-content" style={{ width: '90%' }}>
           <TableComponent
-            table={selected.connection.struture.getTableByName(
+            table={selected.connection.structure.getTableByName(
               this.popupTable,
             )}
-            structure={selected.connection.struture}
+            structure={selected.connection.structure}
             highlightColumns={this.poppupColumns}
             selectForeignKey={(key:any) => this.selectForeignKey(key)}
           />
@@ -85,8 +85,8 @@ class TableVerificationScreen extends Component<PropType> {
 
   renderSmallList() {
     const { selected } = this.props;
-    const { struture } = selected.connection;
-    if (!struture) {
+    const { structure } = selected.connection;
+    if (!structure) {
       return null;
     }
     let id = 0;
@@ -94,12 +94,12 @@ class TableVerificationScreen extends Component<PropType> {
     return (
       <div className="box">
         <h3>Tables which are too small to be relevant</h3>
-        {struture.tablesToVerify
+        {structure.tablesToVerify
           .filter((item) => item.type !== 'island' && item.type !== 'single')
           .map((item) => (
             <VerifyTable
               key={id++}
-              tables={struture.tables}
+              tables={structure.tables}
               item={item}
               previewTable={(name: any) => this.openPopup(name)}
             />
@@ -110,8 +110,8 @@ class TableVerificationScreen extends Component<PropType> {
 
   renderNoConnections() {
     const { selected } = this.props;
-    const { struture } = selected.connection;
-    if (!struture) {
+    const { structure } = selected.connection;
+    if (!structure) {
       return null;
     }
     let id = 0;
@@ -119,12 +119,12 @@ class TableVerificationScreen extends Component<PropType> {
     return (
       <div className="box">
         <h3>Tables with no connections</h3>
-        {struture.tablesToVerify
+        {structure.tablesToVerify
           .filter((item) => item.type === 'single')
           .map((item, i) => (
             <VerifyTable
               key={id++}
-              tables={struture.tables}
+              tables={structure.tables}
               item={item}
               previewTable={(name: any) => this.openPopup(name)}
             />
@@ -135,8 +135,8 @@ class TableVerificationScreen extends Component<PropType> {
 
   renderFewConnections() {
     const { selected } = this.props;
-    const { struture } = selected.connection;
-    if (!struture) {
+    const { structure } = selected.connection;
+    if (!structure) {
       return null;
     }
     let id = 0;
@@ -144,12 +144,12 @@ class TableVerificationScreen extends Component<PropType> {
     return (
       <div className="box">
         <h3>Tables with no relevant connections making them useless</h3>
-        {struture.tablesToVerify
+        {structure.tablesToVerify
           .filter((item) => item.type === 'island')
           .map((item, i) => (
             <VerifyTable
               key={id++}
-              tables={struture.tables}
+              tables={structure.tables}
               item={item}
               previewTable={(name: any) => this.openPopup(name)}
             />
