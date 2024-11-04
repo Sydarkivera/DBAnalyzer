@@ -16,12 +16,10 @@ interface PropsType {
 
 @inject('connections', 'selected', 'errorStore')
 @observer
-class DBSelectScreen extends Component<PropsType> {
-  @observable showAddForm = false;
-
-  @observable demoConnection: ConnectionStore;
-
-  @observable formConnectionStatus = '';
+class DatabaseSelectScreen extends Component<PropsType> {
+  @observable accessor showAddForm = false;
+  @observable accessor demoConnection: ConnectionStore;
+  @observable accessor formConnectionStatus = '';
 
   constructor(props: PropsType) {
     super(props);
@@ -135,4 +133,4 @@ class DBSelectScreen extends Component<PropsType> {
   }
 }
 
-export default DBSelectScreen;
+export default DatabaseSelectScreen;

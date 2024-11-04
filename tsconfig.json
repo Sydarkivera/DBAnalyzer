@@ -14,7 +14,7 @@
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
-    "experimentalDecorators": true,
+    "experimentalDecorators": false,
     "baseUrl": "./",
   },
   "include": [

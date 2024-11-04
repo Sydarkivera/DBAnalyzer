@@ -1,55 +1,48 @@
 import React, { Component } from 'react';
-import { BrowserRouter, createBrowserRouter, Outlet, Route, RouterProvider, Routes } from 'react-router-dom';
+import { Outlet, Route, Routes } from 'react-router-dom';
 import './App.css';
 
-import DBSelectScreen from './screens/DatabaseList';
-import Database from './screens/Database';
-import TablePreviewScreen from './screens/TablePreview';
-import VerificationScreen from './screens/Verification';
 import ErrorStore from './store/ErrorStore';
 import { observer } from 'mobx-react';
+
+import DatabaseSelectScreen from './screens/DatabaseSelect.screen';
+import DatabaseScreen from './screens/Database.screen';
+import TablePreviewScreen from './screens/TablePreview.screen';
+import TableVerificationScreen from './screens/TableVerification.screen';
+import store from './store';
 
 interface Props {
   errorStore: ErrorStore
 }
 
 @observer
-class Root extends Component<Props> {
+class App extends Component<Props> {
   render() {
     const { errorStore } = this.props;
     return (
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<DBSelectScreen />} />
-            <Route path="/database/" element={<Database />} />
-            <Route path="/database/table/" element={<TablePreviewScreen />} />
-            <Route path="/database/verification/" element={<VerificationScreen />} />
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<DatabaseSelectScreen history={history} connections={store.connections} selected={store.selected} errorStore={store.errorStore}/>} />
+          <Route path="database" element={<DatabaseScreen history={history} selected={store.selected} errorStore={store.errorStore}/>}>
+            <Route path="table" element={<TablePreviewScreen history={history} selected={store.selected} />} />
+            <Route path="verification" element={<TableVerificationScreen selected={store.selected}/>} />
           </Route>
-        </Routes>
-      </BrowserRouter >
+        </Route>
+      </Routes>
     );
-  };
+  }
 }
 
 function Layout() {
   return (
     <>
-      <header> {/* TODO: Use header code from App.tsx version 1.0.0 */} </header>
+      <header></header>
       <main>
         <Outlet />
       </main>
-      <footer> {/* TODO: Use code from App.tsx version 1.0.0 */} </footer>
+      <footer></footer>
     </>
   );
 }
 
-// Router singleton created
-const router = createBrowserRouter([
-  { path: "*", element: <Root /> },
-]);
-
-// RouterProvider added
-export default function App() {
-  return <RouterProvider router={router} />;
-}
+export default App;

@@ -14,28 +14,23 @@ interface PropsType {
 @inject('selected')
 @observer
 class TablePreviewScreen extends Component<PropsType> {
-  @observable data: any[] = [];
-
-  @observable structure: any[] = [];
-
-  @observable start = 0;
-
-  @observable interval = 30;
-
-  @observable popupTable: any = undefined;
-
-  @observable poppupColumns: any[] = [];
+  @observable accessor data: any[] = [];
+  @observable accessor structure: any[] = [];
+  @observable accessor start = 0;
+  @observable accessor interval = 30;
+  @observable accessor popupTable: any = undefined;
+  @observable accessor poppupColumns: any[] = [];
 
   allowData = true;
 
   constructor(props: PropsType) {
     super(props);
 
-    if (!props.selected.connection.struture) {
+    if (!props.selected.connection.structure) {
       props.selected.connection.loadDatabaseStructure();
     }
-    if (props.selected.connection.struture) {
-      props.selected.connection.struture.fetchAllTables();
+    if (props.selected.connection.structure) {
+      props.selected.connection.structure.fetchAllTables();
     }
 
     if (props.selected.table) {
@@ -46,7 +41,7 @@ class TablePreviewScreen extends Component<PropsType> {
 
   render() {
     const { selected } = this.props;
-    if (!selected.connection.struture) {
+    if (!selected.connection.structure) {
       return null;
     }
 
@@ -81,7 +76,7 @@ class TablePreviewScreen extends Component<PropsType> {
         <div className="section">
           <TableComponent
             table={selected.table}
-            structure={selected.connection.struture}
+            structure={selected.connection.structure}
           />
         </div>
       </div>

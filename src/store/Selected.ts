@@ -11,11 +11,9 @@ const FileStore = window.require('electron-store');
 const fileStore = new FileStore();
 
 export default class SelectedStore {
-  @observable connection: ConnectionStore;
-
-  @observable table?: TableStore;
-
-  @observable autoSave: boolean = true;
+  @observable accessor connection: ConnectionStore;
+  @observable accessor table: TableStore | undefined;
+  @observable accessor autoSave: boolean = true;
 
   saveHandler: IReactionDisposer;
 
@@ -64,8 +62,8 @@ export default class SelectedStore {
         }
       }
       if (data.tableId) {
-        if (this.connection && this.connection.struture) {
-          this.table = this.connection.struture.getTable(data.tableId);
+        if (this.connection && this.connection.structure) {
+          this.table = this.connection.structure.getTable(data.tableId);
         }
       }
       this.autoSave = true;

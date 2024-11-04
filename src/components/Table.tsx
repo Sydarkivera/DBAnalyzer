@@ -21,19 +21,13 @@ interface StateType {
 
 @observer
 class TableComponent extends Component<PropsType> {
-  @observable data: any[][] = [];
-
-  @observable structure: any[] = [];
-
-  @observable start = 0;
-
-  @observable interval = 30;
-
-  @observable numberOfRows = 0;
-
-  @observable displayNullColumns = false;
-
-  @observable highlight: ForeignKeyColumn[] = [];
+  @observable accessor data: any[][] = [];
+  @observable accessor structure: any[] = [];
+  @observable accessor start = 0;
+  @observable accessor interval = 30;
+  @observable accessor numberOfRows = 0;
+  @observable accessor displayNullColumns = false;
+  @observable accessor highlight: ForeignKeyColumn[] = [];
 
   allowData = true;
 

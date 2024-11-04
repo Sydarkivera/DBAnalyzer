@@ -33,31 +33,31 @@ export const STRUCTURE_STEPS = [
 ];
 
 export default class DatabaseStructureStore {
-  @observable tables: TableStore[] = [];
+  @observable accessor tables: TableStore[] = [];
 
-  @observable loading = false;
+  @observable accessor loading = false;
 
-  @observable id = '';
+  @observable accessor id = '';
 
-  @observable tablesToVerify: any[] = [];
+  @observable accessor tablesToVerify: any[] = [];
 
-  @observable structureStep = 1;
+  @observable accessor structureStep = 1;
 
-  @observable analysisStep = 0;
+  @observable accessor analysisStep = 0;
 
-  @observable progress = 0;
+  @observable accessor progress = 0;
 
-  @observable isRunning = false;
+  @observable accessor isRunning = false;
 
-  @observable autoSave = true;
+  @observable accessor autoSave = true;
 
-  @observable ignoreFoundKeys = false;
+  @observable accessor ignoreFoundKeys = false;
 
-  @observable likelinessThreshold = 0.8;
+  @observable accessor likelinessThreshold = 0.8;
 
-  @observable candidateKeyProgress: string[] = []
+  @observable accessor candidateKeyProgress: string[] = []
 
-  @observable foreignKeyProgress: string[] = []
+  @observable accessor foreignKeyProgress: string[] = []
 
   connection: ConnectionStore;
 
@@ -279,8 +279,8 @@ export default class DatabaseStructureStore {
       if (table.rowCount > 0) {
         try {
           await table.fetchColumns();
-        } catch (e) {
-          this.errorStore.add(`Error loading column data for table: "${table.tableName}"`, e.message);
+        } catch (error: any) {
+          this.errorStore.add(`Error loading column data for table: "${table.tableName}"`, error.message);
           return false;
         }
       }
@@ -298,8 +298,8 @@ export default class DatabaseStructureStore {
       if (table.rowCount > 0) {
         try {
           await table.findNullColumns();
-        } catch (e) {
-          this.errorStore.add(`Error finding column with no data in table: "${table.tableName}"`, e.message);
+        } catch (error: any) {
+          this.errorStore.add(`Error finding column with no data in table: "${table.tableName}"`, error.message);
           return false;
         }
       }
@@ -334,8 +334,8 @@ export default class DatabaseStructureStore {
       if (!this.candidateKeyProgress.includes(key) && table.rowCount > 0) {
         try {
           await table.findCandidateKeys();
-        } catch (e) {
-          this.errorStore.add(`Error finding candidate keys in table: "${table.tableName}"`, e.message);
+        } catch (error: any) {
+          this.errorStore.add(`Error finding candidate keys in table: "${table.tableName}"`, error.message);
           return false;
         }
       }
@@ -355,8 +355,8 @@ export default class DatabaseStructureStore {
       if (!this.foreignKeyProgress.includes(key) && table.rowCount > 0) {
         try {
           await table.findForeignKeys(this.tables);
-        } catch (e) {
-          this.errorStore.add(`Error finding foreign keys in table: "${table.tableName}"`, e.message);
+        } catch (error: any) {
+          this.errorStore.add(`Error finding foreign keys in table: "${table.tableName}"`, error.message);
           return false;
         }
       }

@@ -12,18 +12,12 @@ var electron = __webpack_require__(/*! electron */ "electron");
 var isDev = __webpack_require__(/*! electron-is-dev */ "./node_modules/electron-is-dev/index.js");
 var log = __webpack_require__(/*! electron-log */ "./node_modules/electron-log/src/index.js");
 var fs = __webpack_require__(/*! fs */ "fs");
-log.info('Hello, log');
-log.warn('Some problem appears');
 
-// require("electron-reload")(__dirname);
 // Module to control application life.
 var app = electron.app;
 // Module to create native browser window.
 var BrowserWindow = electron.BrowserWindow;
 var path = __webpack_require__(/*! path */ "path");
-// const url = require("url");
-
-// const mssql = require("mssql");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -38,6 +32,11 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true
     }
+  });
+  registerRoute({
+    id: 'main',
+    browserWindow: window,
+    htmlFile: path.join(__dirname, '../renderer/index.html')
   });
   log.info('creating window');
 
@@ -648,7 +647,7 @@ function processMessage(message) {
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
-var __dirname = "node_modules/electron-log/src/main";
+var __dirname = "node_modules\\electron-log\\src\\main";
 
 
 const fs = __webpack_require__(/*! fs */ "fs");

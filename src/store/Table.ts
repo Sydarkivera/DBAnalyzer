@@ -19,27 +19,17 @@ export enum ShouldSave {
 }
 
 export default class TableStore {
-  @observable id: string = '';
-
-  @observable tableName = '';
-
-  @observable columns: ColumnStructure[] = [];
-
-  @observable data: any[] = [];
-
-  @observable candidateKeys: any[] = [];
-
-  @observable primaryKeys: string[] = [];
-
-  @observable foreignKeys: ForeignKeyStructure[] = [];
-
-  @observable foundForeignKeys: ForeignKeyStructure[] = [];
-
-  @observable rowCount = 0;
-
-  @observable shouldSave = ShouldSave.Undecided;
-
-  @observable autoSave = true;
+  @observable accessor id: string = '';
+  @observable accessor tableName = '';
+  @observable accessor columns: ColumnStructure[] = [];
+  @observable accessor data: any[] = [];
+  @observable accessor candidateKeys: any[] = [];
+  @observable accessor primaryKeys: string[] = [];
+  @observable accessor foreignKeys: ForeignKeyStructure[] = [];
+  @observable accessor foundForeignKeys: ForeignKeyStructure[] = [];
+  @observable accessor rowCount = 0;
+  @observable accessor shouldSave = ShouldSave.Undecided;
+  @observable accessor autoSave = true;
 
   candidateProgress = 0;
 

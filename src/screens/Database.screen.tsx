@@ -24,11 +24,9 @@ interface PropsType {
 @inject('selected', 'errorStore')
 @observer
 class DatabaseScreen extends Component<PropsType> {
-  @observable searchText = '';
-
-  @observable showEditForm = false;
-
-  @observable formConnection: ConnectionStore
+  @observable accessor searchText = '';
+  @observable accessor showEditForm = false;
+  @observable accessor formConnection: ConnectionStore
 
   constructor(props: PropsType) {
     super(props);
@@ -43,11 +41,11 @@ class DatabaseScreen extends Component<PropsType> {
   async loadInitialData() {
     return new Promise<void>((resolve, reject) => {
       const { selected } = this.props;
-      if (!selected.connection.struture) {
+      if (!selected.connection.structure) {
         selected.connection.loadDatabaseStructure();
       }
-      if (selected.connection.struture) {
-        selected.connection.struture.fetchAllTables();
+      if (selected.connection.structure) {
+        selected.connection.structure.fetchAllTables();
       }
       resolve();
     });
@@ -86,8 +84,8 @@ class DatabaseScreen extends Component<PropsType> {
 
   calculateVisualParts(currentStep: number, numberOfSteps: number): VisualPart[] {
     const { selected } = this.props;
-    const { struture } = selected.connection;
-    if (!struture) {
+    const { structure } = selected.connection;
+    if (!structure) {
       return [];
     }
 
@@ -102,7 +100,7 @@ class DatabaseScreen extends Component<PropsType> {
     if (currentStep > 0 && currentStep <= numberOfSteps) {
       res.push({
         color: 'yellow',
-        percentage: (100 / numberOfSteps) * struture.progress,
+        percentage: (100 / numberOfSteps) * structure.progress,
       });
     }
 
@@ -111,19 +109,19 @@ class DatabaseScreen extends Component<PropsType> {
 
   renderAnalysisSection() {
     const { selected, history } = this.props;
-    const { struture } = selected.connection;
-    if (!struture) {
+    const { structure } = selected.connection;
+    if (!structure) {
       return <p>Loading structure...</p>;
     }
-    const step = struture.structureStep;
-    const aStep = struture.analysisStep;
-    if (!struture || struture.loading) {
+    const step = structure.structureStep;
+    const aStep = structure.analysisStep;
+    if (!structure || structure.loading) {
       return <p>Loading, please wait</p>;
     }
 
     const datatypes: {[id: string]: number} = {};
-    for (let i = 0; i < struture.tables.length; i++) {
-      const table = struture.tables[i];
+    for (let i = 0; i < structure.tables.length; i++) {
+      const table = structure.tables[i];
       for (let j = 0; j < table.columns.length; j++) {
         const column = table.columns[j];
         if (datatypes[column.dataType]) {
@@ -141,17 +139,17 @@ class DatabaseScreen extends Component<PropsType> {
             <p>
               Number of tables:
               {' '}
-              {struture.numTables}
+              {structure.numTables}
             </p>
             <p>
               Empty tables:
               {' '}
-              {struture.numEmpty}
+              {structure.numEmpty}
             </p>
             <p>
               Total number of columns:
               {' '}
-              {struture.tables.reduce((reducer, item) => reducer + item.columns.length, 0)}
+              {structure.tables.reduce((reducer, item) => reducer + item.columns.length, 0)}
             </p>
             <ExpandableListItem title="Datatypes" isReady={false} isRunning={false} isComplete={false}>
               {/* {datatypes.map((table) => table.tableName).join(', ')} */}
@@ -166,50 +164,50 @@ class DatabaseScreen extends Component<PropsType> {
               }
             </ExpandableListItem>
           </ExpandableListItem>
-          <ExpandableListItem title="Structure analysis" isRunning={struture.isRunning} isReady={step < 5} isComplete={step >= 5} onClick={() => struture.startStructureAnalysis(0, true)}>
+          <ExpandableListItem title="Structure analysis" isRunning={structure.isRunning} isReady={step < 5} isComplete={step >= 5} onClick={() => structure.startStructureAnalysis(0, true)}>
             <p>
               The database has
               {' '}
-              {struture.numExistingForeignKeys}
+              {structure.numExistingForeignKeys}
               {' '}
               Foreign keys and DBAnalyzer found
               {' '}
-              {struture.numFoundForeignKeys}
+              {structure.numFoundForeignKeys}
               {' '}
               Potential Foreign Keys
             </p>
 
-            { step < 5 && struture.isRunning
+            { step < 5 && structure.isRunning
               && (
               <>
                 <p>
                   {STRUCTURE_STEPS[step].name}
                   {' '}
-                  {Math.round(struture.progress * 100)}
+                  {Math.round(structure.progress * 100)}
                   %
                 </p>
                 <ProgressBar label="label" visualParts={this.calculateVisualParts(step, 4)} />
               </>
               )}
-            {step >= 5 && !struture.isRunning
+            {step >= 5 && !structure.isRunning
               && (
               <button
                 className="button is-danger"
                 type="button"
-                onClick={(e) => { struture.analysisStep = 0; struture.structureStep = 0; struture.candidateKeyProgress = []; struture.foreignKeyProgress = []; struture.startStructureAnalysis(0, false); e.stopPropagation(); }}
+                onClick={(e) => { structure.analysisStep = 0; structure.structureStep = 0; structure.candidateKeyProgress = []; structure.foreignKeyProgress = []; structure.startStructureAnalysis(0, false); e.stopPropagation(); }}
               >
                 Run again
               </button>
               )}
           </ExpandableListItem>
-          <ExpandableListItem title="Culling analysis" isRunning={false} isReady={step >= 5 && aStep < 4} isComplete={aStep >= 4} onClick={() => struture.startCulling(0)}>
+          <ExpandableListItem title="Culling analysis" isRunning={false} isReady={step >= 5 && aStep < 4} isComplete={aStep >= 4} onClick={() => structure.startCulling(0)}>
             {aStep >= 4 && <p>Done</p>}
             {aStep >= 4
               && (
               <button
                 className="button is-danger"
                 type="button"
-                onClick={(e) => { struture.analysisStep = 0; struture.startCulling(0); e.stopPropagation(); }}
+                onClick={(e) => { structure.analysisStep = 0; structure.startCulling(0); e.stopPropagation(); }}
               >
                 Run again
               </button>
@@ -223,7 +221,7 @@ class DatabaseScreen extends Component<PropsType> {
                   <p>
                     Found
                     {' '}
-                    {struture.tablesToVerify.length}
+                    {structure.tablesToVerify.length}
                     {' '}
                     tables that needs to be verified
                   </p>
@@ -238,7 +236,7 @@ class DatabaseScreen extends Component<PropsType> {
                 )}
           </div>
           <ExpandableListItem title="Tables that are marked as to be saved" isReady={false} isRunning={false} isComplete={false}>
-            {struture.tables.filter((item) => item.shouldSave !== ShouldSave.No).map((item) => item.tableName).join(', ')}
+            {structure.tables.filter((item) => item.shouldSave !== ShouldSave.No).map((item) => item.tableName).join(', ')}
           </ExpandableListItem>
         </div>
       </>
@@ -247,8 +245,8 @@ class DatabaseScreen extends Component<PropsType> {
 
   renderColumnSearch() {
     const { selected } = this.props;
-    const { struture } = selected.connection;
-    if (!struture) {
+    const { structure } = selected.connection;
+    if (!structure) {
       return null;
     }
 
@@ -256,7 +254,7 @@ class DatabaseScreen extends Component<PropsType> {
       return false;
     }
 
-    const tablesWithColumn = struture.tables.reduce((reducer: any[], table) => {
+    const tablesWithColumn = structure.tables.reduce((reducer: any[], table) => {
       const foundColumns = table.columns.filter((column) => column.columnName.toUpperCase().search(this.searchText.toUpperCase()) > -1).map((column) => column.columnName);
       if (foundColumns.length > 0) {
 
@@ -318,8 +316,8 @@ class DatabaseScreen extends Component<PropsType> {
 
   renderDataTypeSearch() {
     const { selected } = this.props;
-    const { struture } = selected.connection;
-    if (!struture) {
+    const { structure } = selected.connection;
+    if (!structure) {
       return null;
     }
 
@@ -327,7 +325,7 @@ class DatabaseScreen extends Component<PropsType> {
       return false;
     }
 
-    const tablesWithColumn = struture.tables.reduce((reducer: any[], table) => {
+    const tablesWithColumn = structure.tables.reduce((reducer: any[], table) => {
       const foundColumns = table.columns
         .filter((column) => column.dataType.toUpperCase().search(this.searchText.toUpperCase()) > -1)
         .map((column) => ({ dataType: column.dataType, columnName: column.columnName }));
@@ -399,12 +397,12 @@ class DatabaseScreen extends Component<PropsType> {
 
   renderTables() {
     const { selected } = this.props;
-    const { struture } = selected.connection;
-    if (!struture) {
+    const { structure } = selected.connection;
+    if (!structure) {
       return null;
     }
 
-    let tablesSorted = struture.tables.slice().sort((a, b) => {
+    let tablesSorted = structure.tables.slice().sort((a, b) => {
       if (a.rowCount > b.rowCount) {
         return -1;
       }

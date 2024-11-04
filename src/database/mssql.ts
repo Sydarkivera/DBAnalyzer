@@ -4,7 +4,7 @@ import { getSQLColumnsFromList, getSQLNotNULLFromList } from '../functions/sql';
 const mssql = window.require('mssql');
 
 async function connect(connectionData: ConnectionData) {
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     mssql.connect(
       {
         server: connectionData.server,
