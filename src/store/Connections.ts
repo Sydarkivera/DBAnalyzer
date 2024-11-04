@@ -8,7 +8,7 @@ const FileStore = window.require('electron-store');
 const fileStore = new FileStore();
 
 export default class ConnectionsStore {
-  @observable connections: ConnectionStore[] = [];
+  @observable accessor connections: ConnectionStore[] = [];
 
   errorStore: ErrorStore
 

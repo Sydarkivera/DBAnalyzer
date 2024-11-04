@@ -10,7 +10,7 @@ interface ErrorStruct {
 }
 
 export default class ErrorStore {
-  @observable errors: ErrorStruct[] = [];
+  @observable accessor errors: ErrorStruct[] = [];
 
   @action add(title: string, body?: string) {
     this.errors.push({ title, id: uuid(), body });

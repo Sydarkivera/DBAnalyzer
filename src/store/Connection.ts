@@ -11,27 +11,17 @@ const FileStore = window.require('electron-store');
 const fileStore = new FileStore();
 
 export default class ConnectionStore {
-  @observable username = '';
-
-  @observable password = '';
-
-  @observable server = '';
-
-  @observable database = '';
-
-  @observable port = 0;
-
-  @observable dbms = 'mysql';
-
-  @observable loading = false;
-
-  @observable status = '';
-
-  @observable id: string = '';
-
-  @observable struture?: DatabaseStructureStore ;
-
-  @observable label = '';
+  @observable accessor username = '';
+  @observable accessor password = '';
+  @observable accessor server = '';
+  @observable accessor database = '';
+  @observable accessor port = 0;
+  @observable accessor dbms = 'mysql';
+  @observable accessor loading = false;
+  @observable accessor status = '';
+  @observable accessor id: string = '';
+  @observable accessor struture?: DatabaseStructureStore ;
+  @observable accessor label = '';
 
   errorStore: ErrorStore
 

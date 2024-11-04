@@ -33,31 +33,31 @@ export const STRUCTURE_STEPS = [
 ];
 
 export default class DatabaseStructureStore {
-  @observable tables: TableStore[] = [];
+  @observable accessor tables: TableStore[] = [];
 
-  @observable loading = false;
+  @observable accessor loading = false;
 
-  @observable id = '';
+  @observable accessor id = '';
 
-  @observable tablesToVerify: any[] = [];
+  @observable accessor tablesToVerify: any[] = [];
 
-  @observable structureStep = 1;
+  @observable accessor structureStep = 1;
 
-  @observable analysisStep = 0;
+  @observable accessor analysisStep = 0;
 
-  @observable progress = 0;
+  @observable accessor progress = 0;
 
-  @observable isRunning = false;
+  @observable accessor isRunning = false;
 
-  @observable autoSave = true;
+  @observable accessor autoSave = true;
 
-  @observable ignoreFoundKeys = false;
+  @observable accessor ignoreFoundKeys = false;
 
-  @observable likelinessThreshold = 0.8;
+  @observable accessor likelinessThreshold = 0.8;
 
-  @observable candidateKeyProgress: string[] = []
+  @observable accessor candidateKeyProgress: string[] = []
 
-  @observable foreignKeyProgress: string[] = []
+  @observable accessor foreignKeyProgress: string[] = []
 
   connection: ConnectionStore;
 

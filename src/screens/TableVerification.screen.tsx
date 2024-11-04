@@ -14,35 +14,21 @@ interface PropType {
 @inject('selected')
 @observer
 class TableVerificationScreen extends Component<PropType> {
-  @observable loadingTables = false;
-
-  @observable tables: any[] = [];
-
-  @observable numberOfEmptyTables = 0;
-
-  @observable totalRows = 0;
-
-  @observable loading = false;
-
-  @observable candidateProgress = 0;
-
-  @observable foreignProgress = 0;
-
-  @observable tableStructureLoaded = 0;
-
-  @observable tableCandidateKeysLoaded = 0;
-
-  @observable tableForeignKeysLoaded = 0;
-
-  @observable columnsCheckedFoNull = 0;
-
-  @observable numberOfTablesWithOneColumn = 0;
-
-  @observable step = 0;
-
-  @observable poppupColumns: any[] = [];
-
-  @observable popupTable: any = undefined;
+  @observable accessor loadingTables = false;
+  @observable accessor tables: any[] = [];
+  @observable accessor numberOfEmptyTables = 0;
+  @observable accessor totalRows = 0;
+  @observable accessor loading = false;
+  @observable accessor candidateProgress = 0;
+  @observable accessor foreignProgress = 0;
+  @observable accessor tableStructureLoaded = 0;
+  @observable accessor tableCandidateKeysLoaded = 0;
+  @observable accessor tableForeignKeysLoaded = 0;
+  @observable accessor columnsCheckedFoNull = 0;
+  @observable accessor numberOfTablesWithOneColumn = 0;
+  @observable accessor step = 0;
+  @observable accessor poppupColumns: any[] = [];
+  @observable accessor popupTable: any = undefined;
 
   constructor(props: PropType) {
     super(props);

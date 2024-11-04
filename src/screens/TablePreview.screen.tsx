@@ -14,17 +14,12 @@ interface PropsType {
 @inject('selected')
 @observer
 class TablePreviewScreen extends Component<PropsType> {
-  @observable data: any[] = [];
-
-  @observable structure: any[] = [];
-
-  @observable start = 0;
-
-  @observable interval = 30;
-
-  @observable popupTable: any = undefined;
-
-  @observable poppupColumns: any[] = [];
+  @observable accessor data: any[] = [];
+  @observable accessor structure: any[] = [];
+  @observable accessor start = 0;
+  @observable accessor interval = 30;
+  @observable accessor popupTable: any = undefined;
+  @observable accessor poppupColumns: any[] = [];
 
   allowData = true;
 

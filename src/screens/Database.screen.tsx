@@ -24,11 +24,9 @@ interface PropsType {
 @inject('selected', 'errorStore')
 @observer
 class DatabaseScreen extends Component<PropsType> {
-  @observable searchText = '';
-
-  @observable showEditForm = false;
-
-  @observable formConnection: ConnectionStore
+  @observable accessor searchText = '';
+  @observable accessor showEditForm = false;
+  @observable accessor formConnection: ConnectionStore
 
   constructor(props: PropsType) {
     super(props);

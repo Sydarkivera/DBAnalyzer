@@ -17,11 +17,9 @@ interface PropsType {
 @inject('connections', 'selected', 'errorStore')
 @observer
 class DatabaseSelectScreen extends Component<PropsType> {
-  @observable showAddForm = false;
-
-  @observable demoConnection: ConnectionStore;
-
-  @observable formConnectionStatus = '';
+  @observable accessor showAddForm = false;
+  @observable accessor demoConnection: ConnectionStore;
+  @observable accessor formConnectionStatus = '';
 
   constructor(props: PropsType) {
     super(props);

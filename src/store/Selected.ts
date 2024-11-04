@@ -11,11 +11,9 @@ const FileStore = window.require('electron-store');
 const fileStore = new FileStore();
 
 export default class SelectedStore {
-  @observable connection: ConnectionStore;
-
-  @observable table?: TableStore;
-
-  @observable autoSave: boolean = true;
+  @observable accessor connection: ConnectionStore;
+  @observable accessor table?: TableStore;
+  @observable accessor autoSave: boolean = true;
 
   saveHandler: IReactionDisposer;
 
