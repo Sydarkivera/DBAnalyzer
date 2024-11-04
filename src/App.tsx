@@ -9,7 +9,6 @@ import DatabaseSelectScreen from './screens/DatabaseSelect.screen';
 import DatabaseScreen from './screens/Database.screen';
 import TablePreviewScreen from './screens/TablePreview.screen';
 import TableVerificationScreen from './screens/TableVerification.screen';
-import { observable } from 'mobx';
 
 interface Props {
   errorStore: ErrorStore
@@ -22,10 +21,10 @@ class App extends Component<Props> {
     return (
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<DatabaseSelectScreen history={undefined} connections={undefined} selected={undefined} errorStore={new default} />} />
-          <Route path="database" element={<DatabaseScreen history={undefined} selected={undefined} errorStore={new default} />}>
-            <Route path="table" element={<TablePreviewScreen selected={undefined} history={undefined} />} />
-            <Route path="verification" element={<TableVerificationScreen selected={undefined} />} />
+          <Route index element={<DatabaseSelectScreen />} />
+          <Route path="database" element={<DatabaseScreen />}>
+            <Route path="table" element={<TablePreviewScreen />} />
+            <Route path="verification" element={<TableVerificationScreen />} />
           </Route>
         </Route>
       </Routes>
