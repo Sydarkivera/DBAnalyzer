@@ -7,6 +7,7 @@ import Database from './screens/Database';
 import TablePreviewScreen from './screens/TablePreview';
 import VerificationScreen from './screens/Verification';
 import ErrorStore from './store/ErrorStore';
+import store from './store';
 import './App.css';
 
 interface Props {
@@ -20,12 +21,11 @@ class App extends Component<Props> {
     return (
       <div style={{ backgroundColor: '#f7f7f7', minHeight: '100vh' }}>
         <Routes>
-          <Route path="/" element={<DBSelectScreen />} />
-          <Route path="/database/" element={<Database />} />
-          <Route path="/database/table/" element={<TablePreviewScreen />} />
-          <Route path="/database/verification/" element={<VerificationScreen />}
-          />
-          <Route path="/" element={<DBSelectScreen />} />
+          <Route path="/" element={<DBSelectScreen history={history} connections={store.connections} selected={store.selected} errorStore={store.errorStore}/>} />
+          <Route path="/database/" element={<Database history={history} selected={store.selected} errorStore={store.errorStore}/>} />
+          <Route path="/database/table/" element={<TablePreviewScreen history={history} selected={store.selected}/>} />
+          <Route path="/database/verification/" element={<VerificationScreen selected={store.selected}/>}/>
+          <Route path="/" element={<DBSelectScreen history={history} connections={store.connections} selected={store.selected} errorStore={store.errorStore}/>} />
         </Routes>
         <div style={{
           position: 'fixed', bottom: 0, right: '10%', left: '10%',
