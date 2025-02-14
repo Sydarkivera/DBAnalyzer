@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
 import '../App.css';
