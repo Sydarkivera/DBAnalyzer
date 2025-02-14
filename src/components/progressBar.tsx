@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './progressBar.css';
+import './ProgressBar.css';
 
 export interface VisualPart {
   percentage: number,
