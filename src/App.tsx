@@ -8,7 +8,6 @@ import TablePreviewScreen from './screens/TablePreview';
 import VerificationScreen from './screens/Verification';
 import ErrorStore from './store/ErrorStore';
 import store from './store';
-import './App.css';
 
 interface Props {
   errorStore: ErrorStore
