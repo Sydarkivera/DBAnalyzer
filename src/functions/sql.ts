@@ -20,7 +20,7 @@ export function getSQLNotNULLFromList(array: ColumnStructure[], divider = '"') {
   return columns;
 }
 
-export async function executeSQLQuery(query: string, depth: number = 0): Promise<any> {
+export async function executeSQLQuery(query: string, depth = 0): Promise<any> {
   try {
     // create Request object
     const request = new mssql.Request();

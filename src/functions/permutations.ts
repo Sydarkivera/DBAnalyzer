@@ -18,7 +18,7 @@ export function selectN(n: number, array: any[]) {
   return res;
 }
 
-function doLoop(array: any[], start: number, n: number, level: number = 1): any {
+function doLoop(array: any[], start: number, n: number, level = 1): any {
   const res = [];
   for (let i = start; i < array.length; i++) {
     if (level === n) {
@@ -33,7 +33,7 @@ function doLoop(array: any[], start: number, n: number, level: number = 1): any 
   return res;
 }
 
-export function permutations(array: any[], level: number = 0): any {
+export function permutations(array: any[], level = 0): any {
   if (level === array.length - 1) {
     return array[level].map((item: any) => [item]);
   }
@@ -124,7 +124,7 @@ function distance(a: string, b: string) {
   // Looking only within the search range, count and flag the matched pairs.
   let Num_com = 0;
   const yl1 = b_len - 1;
-  for (var i: number = 0; i < a_len; i++) {
+  for (var i = 0; i < a_len; i++) {
     const lowlim = i >= search_range ? i - search_range : 0;
     const hilim = i + search_range <= yl1 ? i + search_range : yl1;
     for (var j = lowlim; j <= hilim; j++) {

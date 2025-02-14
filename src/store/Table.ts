@@ -19,7 +19,7 @@ export enum ShouldSave {
 }
 
 export default class TableStore {
-  @observable id: string = '';
+  @observable id = '';
 
   @observable tableName = '';
 

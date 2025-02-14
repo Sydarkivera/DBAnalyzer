@@ -5,8 +5,8 @@ import ConnectionStore from '../store/Connection';
 
 interface Props {
   show: boolean,
-  onClose: Function,
-  onSave: Function,
+  onClose: (...args: any[]) => any,
+  onSave: (...args: any[]) => any,
   connection: ConnectionStore
  }
 

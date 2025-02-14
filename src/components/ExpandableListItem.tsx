@@ -1,6 +1,6 @@
 import React, { useState, MouseEvent } from 'react';
 import { FaChevronDown, FaCheck } from 'react-icons/fa';
-import Spinner from './spinner';
+import Spinner from './Spinner';
 
 interface Props {
   title?: string,
@@ -8,7 +8,7 @@ interface Props {
   isRunning: boolean,
   isComplete: boolean,
   children: React.ReactNode,
-  onClick?: Function
+  onClick?: (...args: any[]) => any,
  }
 
 const ExpandableListItem = ({

@@ -15,7 +15,7 @@ export default class SelectedStore {
 
   @observable table?: TableStore;
 
-  @observable autoSave: boolean = true;
+  @observable autoSave = true;
 
   saveHandler: IReactionDisposer;
 

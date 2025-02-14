@@ -1,41 +1,41 @@
 export class ConnectionData {
-  server: string = ''
+  server = ''
 
-  database: string = ''
+  database = ''
 
-  username: string = ''
+  username = ''
 
-  password: string = ''
+  password = ''
 
-  port: number = 0
+  port = 0
 
-  dbms: string = ''
+  dbms = ''
 
-  label: string = ''
+  label = ''
 }
 
 export class ForeignKeyColumn {
-    pkColumn: string = ''
+    pkColumn = ''
 
-    fkColumn: string = ''
+    fkColumn = ''
 }
 
 export class ForeignKeyStructure {
-  fkTable: string = ''
+  fkTable = ''
 
-  pkTable: string = ''
+  pkTable = ''
 
   columns: ForeignKeyColumn[] = []
 }
 
 export class ColumnStructure {
-  columnName: string = ''
+  columnName = ''
 
-  dataType: string = ''
+  dataType = ''
 
-  primaryKey: boolean = false
+  primaryKey = false
 
   foreignKeys: ForeignKeyStructure[] = []
 
-  isNull: boolean = false
+  isNull = false
 }

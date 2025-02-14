@@ -27,7 +27,7 @@ export default class ConnectionStore {
 
   @observable status = '';
 
-  @observable id: string = '';
+  @observable id = '';
 
   @observable struture?: DatabaseStructureStore ;
 
