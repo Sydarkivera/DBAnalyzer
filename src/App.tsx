@@ -1,13 +1,13 @@
 import { Component } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import './App.css';
-
 import { observer } from 'mobx-react';
+
 import DBSelectScreen from './screens/DatabaseList';
 import Database from './screens/Database';
 import TablePreviewScreen from './screens/TablePreview';
 import VerificationScreen from './screens/Verification';
 import ErrorStore from './store/ErrorStore';
+import './App.css';
 
 interface Props {
   errorStore: ErrorStore
