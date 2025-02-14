@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router';
 import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
-import '../App.css';
 
 import { FaSearch } from 'react-icons/fa';
 import ErrorStore from 'src/store/ErrorStore';

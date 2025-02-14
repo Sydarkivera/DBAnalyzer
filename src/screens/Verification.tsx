@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Link } from 'react-router';
 import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
-import '../App.css';
 import SelectedStore from 'src/store/Selected';
 import TableComponent from '../components/Table';
 import VerifyTable from '../components/VerifyTable';
