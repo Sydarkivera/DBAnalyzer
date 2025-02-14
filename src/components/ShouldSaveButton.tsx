@@ -4,7 +4,7 @@ import { FaRegCircle, FaRegCheckCircle } from 'react-icons/fa';
 import { ShouldSave } from '../store/Table';
 
 interface PropTypes {
-  onChange: Function,
+  onChange: (...args: any[]) => any,
   shouldSave: any,
   style?: any
 }

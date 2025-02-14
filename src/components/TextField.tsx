@@ -3,7 +3,7 @@ import React, { ChangeEvent } from 'react';
 interface Props {
   label: string,
   placeholder: string,
-  onChange: Function,
+  onChange: (...args: any[]) => any,
   value: string
  }
 

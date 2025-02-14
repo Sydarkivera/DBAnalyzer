@@ -91,6 +91,7 @@ export default class TableStore {
     try {
       fileStore.set(`table_${this.id}`, this.json);
     } catch (e) {
+      console.log("You should not see this");
     }
   }
 

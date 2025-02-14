@@ -1,4 +1,4 @@
-import { ForeignKeyStructure } from 'src/database/structures';
+import { ForeignKeyStructure } from '../database/structures';
 
 export function select2(array: [any]) {
   const res = [];

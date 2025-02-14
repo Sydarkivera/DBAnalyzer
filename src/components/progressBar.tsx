@@ -51,7 +51,6 @@ const ProgressBar = ({
         {visualParts.map((item: VisualPart, index: number) => (
           <div
               // There won't be additional changes in the array so the index can be used
-              /* eslint-disable-next-line react/no-array-index-key */
             key={index}
             style={{
               width: widths[index],

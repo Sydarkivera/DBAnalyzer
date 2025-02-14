@@ -9,7 +9,7 @@ import DatabaseStructureStore from '../store/DatabaseStructure';
 import { ForeignKeyStructure, ForeignKeyColumn, ColumnStructure } from '../database/structures';
 
 interface PropsType {
-  selectForeignKey?: Function,
+  selectForeignKey?: (...args: any[]) => any,
   highlightColumns?: ForeignKeyColumn[],
   table?: TableStore,
   structure: DatabaseStructureStore
@@ -133,7 +133,6 @@ class TableComponent extends Component<PropsType> {
     const { selectForeignKey } = this.props;
     if (selectForeignKey) {
       selectForeignKey(item);
-    } else {
     }
   }
 
